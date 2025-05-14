@@ -52,8 +52,8 @@ typedef struct
 }llmp16_timer_t;
 
 
-void llmp16_timer_init(llmp16_timer_t timer, uint8_t PSC, uint16_t value, uint16_t init_value);
-void llmp16_timer_count(llmp16_timer_t timer);
+void llmp16_timer_init(llmp16_timer_t *timer, uint8_t PSC, uint16_t value, uint16_t init_value);
+void llmp16_timer_count(llmp16_timer_t *timer);
 
 
 
