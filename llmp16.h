@@ -190,11 +190,7 @@ static inline uint16_t fetch(llmp16_t *cpu)
 instr_t decode(llmp16_t *cpu, uint16_t instr);
 void execute(llmp16_t *cpu, instr_t in);
 void llmp16_run(llmp16_t *cpu);
-
-// ROM loading
-bool llmp16_load_rom(llmp16_t *cpu, const char *filename);
-void llmp16_load_rom_bank(llmp16_t *cpu, const char *filename, uint8_t bank);
-
+void llmp16_cpu_cycle(llmp16_t *cpu);
 
 
 
@@ -242,7 +238,7 @@ typedef struct {
 /* chaque fichier binaire entré dans la ROM devra avoir le code FILE_CODE pour etre traité, 
 le nombre de pages utilisés dans le fichier, et la taille de chaque page.*/
 
-void ROM_LOAD(llmp16_t *cpu, char* file);
+void llmp16_rom_load(llmp16_t *cpu, char* file);
 
 
 
