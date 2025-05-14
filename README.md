@@ -1,6 +1,22 @@
 # LLMP-16
 Machine virtuel
 
+
+## Les ports d'entrées/sorties
+
+Il y a 16 ports($0 - $F) et chaque port a 16 registres de configurations au maximum ($0 - $F)
+Pour accéder aux registres de configurations il faut utiliser les instructions IN/OUT
+
+| Ports | Périphériques | registre 0 | registre 1 | registre 2 |
+| :---: | :---: | :---: | :---: | :---: |
+| $0 | Bank switcher | choix de ROM | choix de la VRAM | - |
+| $1 |     Ecran     | choix de ROM | choix de la VRAM | - |
+| $2 |    clavier    | code de la touche pressée | registre de status | - |
+| $3 |    Timer 1    | PSC |           INIT VALUE           | status |
+| $4 |    Timer 2    | TODO |           TODO           | - |
+| $5 |    Timer 3    | TODO |           TODO           | - |
+
+
 ## Le jeu d’instructions
 
    1. ## **Les instructions Arithmétiques** {#les-instructions-arithmétiques}

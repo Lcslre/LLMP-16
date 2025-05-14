@@ -16,7 +16,7 @@
 *| Registres généraux       | R0–R15 (R15 = ACC), PC, SP, FLAGS                 |
 *| ROM bancaire             | 128 banques × 32 Ko (total = 4 Mio)               |
 *| RAM                      | 32 Ko (map \$8000–\$FFFF)                         |
-*| VRAM                     | 64 Ko (320 * 200 * 4bpp) x 2                      |
+*| VRAM                     | 128 Ko (320 * 200 * 8bpp) x 2                     |
 *| Ports E/S                | 16 ports * 16 registres                           |
 *| Endian                   | little‑endian (LSB à l’adresse la plus basse)     |
 */
@@ -37,7 +37,28 @@ enum{
    FLAG_C = 0x02, /* Carry    (bit 1) */
    FLAG_V = 0x01  /* oVerflow (bit 0) */
 };
- 
+
+/*====================================== TIMER ==========================================*/
+
+/* Les timers fonctionnent tous en mode comparateur uniquement */
+
+typedef struct
+{
+   uint16_t count; // valeur courante du timer
+   uint8_t PSC; // préscaler
+   uint16_t value; // valeur max/min
+   uint16_t init_value;
+   uint16_t status;
+}llmp16_timer_t;
+
+
+void llmp16_timer_init(llmp16_timer_t timer, uint8_t PSC, uint16_t value, uint16_t init_value);
+void llmp16_timer_count(llmp16_timer_t timer);
+
+
+
+
+/*============================== Machine Virtuelle ==============================*/
 
 typedef struct{
    uint16_t R[16];                      /* R0‑R15 (R15 = ACC) */
@@ -51,9 +72,9 @@ typedef struct{
    uint8_t  RAM[LLMP_RAM_SIZE];
    uint8_t  VRAM[LLMP_VRAM_BANKS][LLMP_VRAM_BANK_SIZE];
 
-   uint16_t timer1;                  /* Timer 1 (16 bits) */
-   uint16_t timer2;                  /* Timer 2 (16 bits) */
-   uint16_t timer3;                  /* Timer 3 (16 bits) */
+   llmp16_timer_t timer1;                  /* Timer 1 (16 bits) */
+   llmp16_timer_t timer2;                  /* Timer 2 (16 bits) */
+   llmp16_timer_t timer3;                  /* Timer 3 (16 bits) */
 
  
    uint16_t IO[LLMP_IO_PORTS][LLMP_IO_REGS];  /* 16‑bit regs  */
@@ -218,9 +239,12 @@ typedef struct {
   uint16_t taille_page[LLMP_ROM_BANKS];
 }header_file_t;
 
-/* chaque fichier binaire entré dans la ROM devra avoir le code FILE_CODE pour etre traité, le nombre de pages utilisés dans le fichier, et la taille de chaque page.*/
+/* chaque fichier binaire entré dans la ROM devra avoir le code FILE_CODE pour etre traité, 
+le nombre de pages utilisés dans le fichier, et la taille de chaque page.*/
 
 void ROM_LOAD(llmp16_t *cpu, char* file);
+
+
 
 
 #endif // LLMP_VM_H
