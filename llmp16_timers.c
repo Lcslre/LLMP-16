@@ -8,8 +8,6 @@ void llmp16_timer_init(llmp16_timer_t *timer, uint8_t PSC, uint16_t value, uint1
     timer->value = value;
 }
 
-
-
 void llmp16_timer_count(llmp16_timer_t *timer, uint8_t clk_counter)
 {
     if(clk_counter >= timer->PSC) timer->count++;

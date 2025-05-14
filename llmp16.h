@@ -233,7 +233,7 @@ typedef struct {
   uint16_t code;
   uint8_t nb_pages;
   uint16_t taille_page[LLMP_ROM_BANKS];
-}header_file_t;
+}llmp16_header_rom_file_t;
 
 /* chaque fichier binaire entré dans la ROM devra avoir le code FILE_CODE pour etre traité, 
 le nombre de pages utilisés dans le fichier, et la taille de chaque page.*/

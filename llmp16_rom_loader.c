@@ -4,10 +4,10 @@
 #include <stdlib.h>
 
 void llmp16_rom_load(llmp16_t *cpu, char* file){
-	header_rom_file_t head;
+	llmp16_header_rom_file_t head;
 	FILE* rom_file = fopen(file, "rb");
-	fread(&head, sizeof(header_rom_file_t), 1, rom_file);
-	if(head.code != rom_file_CODE)
+	fread(&head, sizeof(llmp16_header_rom_file_t), 1, rom_file);
+	if(head.code != FILE_CODE)
 		return;
 	int page_act = 0;
 	while(page_act < head.nb_pages){

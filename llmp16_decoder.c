@@ -394,7 +394,7 @@ void execute(llmp16_t *cpu, instr_t in)
      }
 }
 
-void llmp16_step(llmp16_t *cpu)
+void llmp16_cpu_cycle(llmp16_t *cpu)
 {
     uint16_t instr = fetch(cpu);
     instr_t in = decode(cpu, instr);
