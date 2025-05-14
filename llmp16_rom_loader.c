@@ -4,17 +4,18 @@
 #include <stdlib.h>
 
 void llmp16_rom_load(llmp16_t *cpu, char* file){
-	header_file_t *head = (header_file_t*)malloc(sizeof(header_file_t));
-	char* FILE = fopen(file, "rb");
-	fread(head, sizeof(header_file_t), 1, FILE);
-	if(head->code != FILE_CODE)
+	header_rom_file_t head;
+	FILE* rom_file = fopen(file, "rb");
+	fread(&head, sizeof(header_rom_file_t), 1, rom_file);
+	if(head.code != rom_file_CODE)
 		return;
 	int page_act = 0;
-	while(page_act < head->nb_pages){
-  		char* page_content = (char*)malloc(sizeof(head->taille_page[head->nb_pages]));
-  		fread(page_content, sizeof(head->taille_page[head->nb_pages]), 1, FILE);
-		memcpy( cpu->ROM[page_act][], page_content, sizeof(head->taille_page[head->nb_pages]));
+	while(page_act < head.nb_pages){
+  		char* page_content = (char*)malloc(sizeof(head.taille_page[head.nb_pages]));
+  		fread(page_content, sizeof(head.taille_page[head.nb_pages]), 1, rom_file);
+		memcpy( cpu->ROM[page_act], page_content, sizeof(head.taille_page[head.nb_pages]));
+		free(page_content);
   		page_act++;
 	}
-  
+	fclose(rom_file);
 }
