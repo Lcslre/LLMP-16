@@ -1,12 +1,13 @@
-#include "llmp16.h"
 #include <SDL2/SDL.h>
 #include <stdlib.h>
 
 #define W_WIDTH    640
 #define W_HEIGHT   400
 
+
 #define BLACK   0, 0, 0, 255
 #define WHITE   255, 255, 255, 255
+
 
 SDL_bool ecran_actif = SDL_TRUE;
 
@@ -15,7 +16,7 @@ SDL_Renderer *p_Render = NULL;
 SDL_Texture *texture = NULL;
 SDL_Event event;
 
-Uint32 vram[W_WIDTH * W_HEIGHT]; // Mémoire vidéo
+
 
 void ecran_init(void);
 void ecran_inputs(void);
@@ -33,12 +34,44 @@ int main(int argc, char **argv)
     {
         ecran_inputs();
 
-        // Exemple: remplir la VRAM avec du blanc
+        // Exemple: remplir la VRAM 
         for (int y = 0; y < W_HEIGHT; y++) {
-            for (int x = 0; x < W_WIDTH; x++) {
-                vram[y * W_WIDTH + x] = 0xFFFFFFFF; // Blanc
-            }
+           for (int x = 0; x < W_WIDTH; x++) {
+            // Base RGB en fonction de bande
+             Uint8 r = 0, g = 0, b = 0;
+              if (x < W_WIDTH / 5) {
+                 r = 0; g = 0; b = 0;        // NOIR
+              } else if (x < 2 * W_WIDTH / 5) {
+                r = 255; g = 0; b = 0;      // ROUGE
+              } else if (x < 3 * W_WIDTH / 5) {
+                r = 0; g = 255; b = 0;      // VERT
+              } else if (x < 4 * W_WIDTH / 5) {
+                r = 0; g = 0; b = 255;      // BLEU
+              } else {
+                r = 255; g = 255; b = 255;  // BLANC
         }
+
+        // Encode couleur complète dans VRAM (ARGB)
+        Uint32 pixel = (255 << 24) | (r << 16) | (g << 8) | b;
+        vram[y * W_WIDTH + x] = pixel;
+
+        // Lire à nouveau le pixel de la VRAM
+        Uint32 px = vram[y * W_WIDTH + x];
+
+        // Appliquer MASQUES pour extraire les 3 bits les plus forts
+        Uint8 r3 = (px >> 16) & 0xE0; // 11100000
+        Uint8 g3 = (px >> 8)  & 0xE0;
+        Uint8 b3 = px & 0xE0;
+
+        // Reconvertir 3 bits en 8 bits (ex: r3 >> 5 donne 0–7, on scale vers 255)
+        Uint8 rf = (r3 >> 5) * 36;  // (255 / 7) ≈ 36
+        Uint8 gf = (g3 >> 5) * 36;
+        Uint8 bf = (b3 >> 5) * 36;
+
+        // Écrire à nouveau dans la VRAM avec les composantes limitées
+        vram[y * W_WIDTH + x] = (255 << 24) | (rf << 16) | (gf << 8) | bf;
+    }
+}
 
         SDL_SetRenderDrawColor(p_Render, BLACK);
         SDL_RenderClear(p_Render);
