@@ -15,7 +15,7 @@ SDL_Renderer *p_Render = NULL;
 SDL_Texture *texture = NULL;
 SDL_Event event;
 
-Uint32 vram[W_WIDTH * W_HEIGHT]; // Mémoire vidéo
+Uint32 vram[2][W_WIDTH * W_HEIGHT]; // Mémoire vidéo
 
 void ecran_init(void);
 void ecran_inputs(void);
@@ -28,7 +28,6 @@ int main(int argc, char **argv)
     (void)argv;
 
     ecran_init();
-
     while(ecran_actif)
     {
         ecran_inputs();
@@ -40,7 +39,24 @@ int main(int argc, char **argv)
             }
         }
 
-        SDL_SetRenderDrawColor(p_Render, BLACK);
+        // Extraire les composantes
+        uint8_t r3 = (pixel8 >> 5) & 0x07; // bits 7-5
+        uint8_t g3 = (pixel8 >> 2) & 0x07; // bits 4-2
+        uint8_t b2 = pixel8 & 0x03;        // bits 1-0
+
+        // Étendre sur 8 bits (approx.) :
+        r = (r3 * 255) / 7;
+        g = (g3 * 255) / 7;
+        b = (b2 * 255) / 3;
+        // Composer un pixel 32 bits ARGB
+        couleur = (r << 24) | (g << 16) | ( b<< 8) | 255;
+
+        // Stocker dans la texture d'affichage
+        vram[1][y * W_WIDTH + x] = couleur;
+    }
+}
+
+        SDL_SetRenderDrawColor(p_Render,r,g,b,255);
         SDL_RenderClear(p_Render);
 
         ecran_affiche_pixels();
@@ -112,3 +128,5 @@ void ecran_clean(void)
     SDL_DestroyWindow(p_Window);
     SDL_Quit();
 }
+
+// VRAM en 32 bits, double buffer (2 écrans)
