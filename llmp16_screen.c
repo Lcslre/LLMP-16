@@ -1,14 +1,12 @@
+#include "llmp16.h"
 #include <SDL2/SDL.h>
 #include <stdlib.h>
 
 #define W_WIDTH    640
 #define W_HEIGHT   400
 
-
 #define BLACK   0, 0, 0, 255
 #define WHITE   255, 255, 255, 255
-uint8_t r,g ,b;
-uint32_t couleur;
 
 SDL_bool ecran_actif = SDL_TRUE;
 
@@ -17,7 +15,7 @@ SDL_Renderer *p_Render = NULL;
 SDL_Texture *texture = NULL;
 SDL_Event event;
 
-
+Uint32 vram[W_WIDTH * W_HEIGHT]; // Mémoire vidéo
 
 void ecran_init(void);
 void ecran_inputs(void);
@@ -35,31 +33,14 @@ int main(int argc, char **argv)
     {
         ecran_inputs();
 
-        // Exemple: remplir la VRAM 
-       // Dans ta boucle de rendu :
-for (int y = 0; y < W_HEIGHT; y++) {
-    for (int x = 0; x < W_WIDTH; x++) {
-        // Lire le pixel compressé
-        uint8_t pixel8 = vram[0][y * W_WIDTH + x];
+        // Exemple: remplir la VRAM avec du blanc
+        for (int y = 0; y < W_HEIGHT; y++) {
+            for (int x = 0; x < W_WIDTH; x++) {
+                vram[y * W_WIDTH + x] = 0xFFFFFFFF; // Blanc
+            }
+        }
 
-        // Extraire les composantes
-        uint8_t r3 = (pixel8 >> 5) & 0x07; // bits 7-5
-        uint8_t g3 = (pixel8 >> 2) & 0x07; // bits 4-2
-        uint8_t b2 = pixel8 & 0x03;        // bits 1-0
-
-        // Étendre sur 8 bits (approx.) :
-        r = (r3 * 255) / 7;
-        g = (g3 * 255) / 7;
-        b = (b2 * 255) / 3;
-        // Composer un pixel 32 bits ARGB
-        couleur = (r << 24) | (g << 16) | (b << 8) | 255;
-
-        // Stocker dans la texture d'affichage
-        vram[1][y * W_WIDTH + x] = couleur;
-    }
-}
-
-        SDL_SetRenderDrawColor(p_Render,r,g,b,255);
+        SDL_SetRenderDrawColor(p_Render, BLACK);
         SDL_RenderClear(p_Render);
 
         ecran_affiche_pixels();

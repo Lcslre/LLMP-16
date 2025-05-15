@@ -91,13 +91,7 @@ void execute(llmp16_t *cpu, instr_t in)
             break;
         }
         case 0x4: { /* SDIV – signed division (optional) */
-            int16_t num  = (int16_t)cpu->R[in.X];
-            int16_t den  = (int16_t)cpu->R[in.Y];
-            if (den == 0) break;
-            int16_t res  = num / den;
-            cpu->R[15] = (uint16_t)res;
-            flag_nz(cpu, (uint16_t)res);
-            break;
+            break; // TODO
         }
         case 0x6: { /* CMP */
             uint16_t a = cpu->R[in.X];
