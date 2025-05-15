@@ -17,7 +17,7 @@ SDL_Renderer *p_Render = NULL;
 SDL_Texture *texture = NULL;
 SDL_Event event;
 
-
+Uint32 vram[2][W_WIDTH * W_HEIGHT]; // Mémoire vidéo
 
 void ecran_init(void);
 void ecran_inputs(void);
@@ -30,7 +30,6 @@ int main(int argc, char **argv)
     (void)argv;
 
     ecran_init();
-
     while(ecran_actif)
     {
         ecran_inputs();
@@ -52,7 +51,7 @@ for (int y = 0; y < W_HEIGHT; y++) {
         g = (g3 * 255) / 7;
         b = (b2 * 255) / 3;
         // Composer un pixel 32 bits ARGB
-        couleur = (r << 24) | (g << 16) | (b << 8) | 255;
+        couleur = (r << 24) | (g << 16) | ( b<< 8) | 255;
 
         // Stocker dans la texture d'affichage
         vram[1][y * W_WIDTH + x] = couleur;
@@ -131,3 +130,5 @@ void ecran_clean(void)
     SDL_DestroyWindow(p_Window);
     SDL_Quit();
 }
+
+// VRAM en 32 bits, double buffer (2 écrans)
