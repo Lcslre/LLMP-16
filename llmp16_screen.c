@@ -7,7 +7,8 @@
 
 #define BLACK   0, 0, 0, 255
 #define WHITE   255, 255, 255, 255
-
+uint8_t r,g ,b;
+uint32_t couleur;
 
 SDL_bool ecran_actif = SDL_TRUE;
 
@@ -35,45 +36,30 @@ int main(int argc, char **argv)
         ecran_inputs();
 
         // Exemple: remplir la VRAM 
-        for (int y = 0; y < W_HEIGHT; y++) {
-           for (int x = 0; x < W_WIDTH; x++) {
-            // Base RGB en fonction de bande
-             Uint8 r = 0, g = 0, b = 0;
-              if (x < W_WIDTH / 5) {
-                 r = 0; g = 0; b = 0;        // NOIR
-              } else if (x < 2 * W_WIDTH / 5) {
-                r = 255; g = 0; b = 0;      // ROUGE
-              } else if (x < 3 * W_WIDTH / 5) {
-                r = 0; g = 255; b = 0;      // VERT
-              } else if (x < 4 * W_WIDTH / 5) {
-                r = 0; g = 0; b = 255;      // BLEU
-              } else {
-                r = 255; g = 255; b = 255;  // BLANC
-        }
+       // Dans ta boucle de rendu :
+for (int y = 0; y < W_HEIGHT; y++) {
+    for (int x = 0; x < W_WIDTH; x++) {
+        // Lire le pixel compressé
+        uint8_t pixel8 = vram[0][y * W_WIDTH + x];
 
-        // Encode couleur complète dans VRAM (ARGB)
-        Uint32 pixel = (255 << 24) | (r << 16) | (g << 8) | b;
-        vram[y * W_WIDTH + x] = pixel;
+        // Extraire les composantes
+        uint8_t r3 = (pixel8 >> 5) & 0x07; // bits 7-5
+        uint8_t g3 = (pixel8 >> 2) & 0x07; // bits 4-2
+        uint8_t b2 = pixel8 & 0x03;        // bits 1-0
 
-        // Lire à nouveau le pixel de la VRAM
-        Uint32 px = vram[y * W_WIDTH + x];
+        // Étendre sur 8 bits (approx.) :
+        r = (r3 * 255) / 7;
+        g = (g3 * 255) / 7;
+        b = (b2 * 255) / 3;
+        // Composer un pixel 32 bits ARGB
+        couleur = (r << 24) | (g << 16) | (b << 8) | 255;
 
-        // Appliquer MASQUES pour extraire les 3 bits les plus forts
-        Uint8 r3 = (px >> 16) & 0xE0; // 11100000
-        Uint8 g3 = (px >> 8)  & 0xE0;
-        Uint8 b3 = px & 0xE0;
-
-        // Reconvertir 3 bits en 8 bits (ex: r3 >> 5 donne 0–7, on scale vers 255)
-        Uint8 rf = (r3 >> 5) * 36;  // (255 / 7) ≈ 36
-        Uint8 gf = (g3 >> 5) * 36;
-        Uint8 bf = (b3 >> 5) * 36;
-
-        // Écrire à nouveau dans la VRAM avec les composantes limitées
-        vram[y * W_WIDTH + x] = (255 << 24) | (rf << 16) | (gf << 8) | bf;
+        // Stocker dans la texture d'affichage
+        vram[1][y * W_WIDTH + x] = couleur;
     }
 }
 
-        SDL_SetRenderDrawColor(p_Render, BLACK);
+        SDL_SetRenderDrawColor(p_Render,r,g,b,255);
         SDL_RenderClear(p_Render);
 
         ecran_affiche_pixels();
