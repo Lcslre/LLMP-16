@@ -1,134 +1,127 @@
 #include <SDL2/SDL.h>
 #include <stdlib.h>
+#include <stdint.h>
+#include <strings.h>
 
-#define W_WIDTH    640
-#define W_HEIGHT   400
 
+#define LLMP_SCREEN_HEIGHT 200
+#define LLMP_SCREEN_WIDTH  320
+#define LLMP_SCREEN_SCALE 4
+#define LLMP_WINDOW_WIDTH LLMP_SCREEN_WIDTH * LLMP_SCREEN_SCALE
+#define LLMP_WINDOW_HEIGHT LLMP_SCREEN_HEIGHT * LLMP_SCREEN_SCALE
 
-#define BLACK   0, 0, 0, 255
-#define WHITE   255, 255, 255, 255
-uint8_t r,g ,b;
-uint32_t couleur;
-
-SDL_bool ecran_actif = SDL_TRUE;
-
-SDL_Window *p_Window = NULL;
-SDL_Renderer *p_Render = NULL;
-SDL_Texture *texture = NULL;
-SDL_Event event;
-
-Uint32 vram[2][W_WIDTH * W_HEIGHT]; // Mémoire vidéo
-
-void ecran_init(void);
-void ecran_inputs(void);
-void ecran_clean(void);
-void ecran_affiche_pixels(void);
-
-int main(int argc, char **argv)
+typedef struct
 {
-    (void)argc;
-    (void)argv;
+    SDL_Window *window;
+    SDL_Renderer* renderer;
+    SDL_Texture *framebuffer;
+    uint8_t **VRAM;
+}llmp16_screen_t;
 
-    ecran_init();
-    while(ecran_actif)
+int llmp16_screen_init(llmp16_screen_t *screen);
+int llmp16_screen_off(llmp16_screen_t *screen);
+void llmp16_screen_render(llmp16_screen_t screen);
+
+
+int llmp16_screen_init(llmp16_screen_t *screen)
+{
+
+    screen->VRAM = (uint8_t**)malloc(sizeof(uint8_t*)*2);
+
+    if(screen->VRAM == NULL)
     {
-        ecran_inputs();
-
-        // Exemple: remplir la VRAM 
-       // Dans ta boucle de rendu :
-for (int y = 0; y < W_HEIGHT; y++) {
-    for (int x = 0; x < W_WIDTH; x++) {
-        // Lire le pixel compressé
-        uint8_t pixel8 = vram[0][y * W_WIDTH + x];
-
-        // Extraire les composantes
-        uint8_t r3 = (pixel8 >> 5) & 0x07; // bits 7-5
-        uint8_t g3 = (pixel8 >> 2) & 0x07; // bits 4-2
-        uint8_t b2 = pixel8 & 0x03;        // bits 1-0
-
-        // Étendre sur 8 bits (approx.) :
-        r = (r3 * 255) / 7;
-        g = (g3 * 255) / 7;
-        b = (b2 * 255) / 3;
-        // Composer un pixel 32 bits ARGB
-        couleur = (r << 24) | (g << 16) | ( b<< 8) | 255;
-
-        // Stocker dans la texture d'affichage
-        vram[1][y * W_WIDTH + x] = couleur;
-    }
-}
-
-        SDL_SetRenderDrawColor(p_Render,r,g,b,255);
-        SDL_RenderClear(p_Render);
-
-        ecran_affiche_pixels();
-
-        SDL_RenderPresent(p_Render);
-        SDL_Delay(16);
+        return EXIT_FAILURE;
     }
 
-    ecran_clean();
-    return 0;
+    screen->VRAM[0] = (uint8_t*)malloc(LLMP_SCREEN_HEIGHT * LLMP_SCREEN_WIDTH*sizeof(uint8_t));
+
+    if(screen->VRAM[0] == NULL)
+    {
+        return EXIT_FAILURE;
+    }
+    screen->VRAM[1] = (uint8_t*)malloc(LLMP_SCREEN_HEIGHT * LLMP_SCREEN_WIDTH*sizeof(uint8_t));
+
+    if(screen->VRAM[1] == NULL)
+    {
+        return EXIT_FAILURE;
+    }
+
+    if(0 != SDL_Init(SDL_INIT_VIDEO))
+    {
+        fprintf(stderr, "Erreur SDL_Init : %s", SDL_GetError());
+        SDL_Quit();
+        return EXIT_FAILURE;
+    }
+
+    screen->window = SDL_CreateWindow("LLMP-16", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 
+        LLMP_WINDOW_WIDTH, LLMP_WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
+    
+    if(NULL == screen->window)
+    {
+        fprintf(stderr, "Erreur SDL_CreateWindow : %s", SDL_GetError());
+        SDL_Quit();
+        return EXIT_FAILURE;
+    }
+
+    screen->renderer = SDL_CreateRenderer(screen->window, -1, SDL_RENDERER_ACCELERATED);
+
+    if(screen->renderer == NULL)
+    {
+        fprintf(stderr, "Erreur SDL_CreateRenderer : %s", SDL_GetError());
+        SDL_Quit();
+        return EXIT_FAILURE;
+    }
+
+    screen->framebuffer = SDL_CreateTexture(screen->renderer, SDL_PIXELFORMAT_RGB332, SDL_TEXTUREACCESS_STREAMING, LLMP_SCREEN_WIDTH, LLMP_SCREEN_HEIGHT);
+
+    if(screen->framebuffer == NULL)
+    {
+        fprintf(stderr, "Erreur SDL_CreateTexture : %s", SDL_GetError());
+        llmp16_screen_off(screen);
+        return EXIT_FAILURE;
+    }
+
+    return EXIT_SUCCESS;
 }
 
-void ecran_init(void)
+
+int llmp16_screen_off(llmp16_screen_t *screen)
 {
-    if(SDL_Init(SDL_INIT_EVERYTHING) != 0) {
-        SDL_Log("Erreur SDL Init: %s\n", SDL_GetError());
-        exit(EXIT_FAILURE);
+    if (screen->VRAM) {
+        if (screen->VRAM[0]) free(screen->VRAM[0]);
+        if (screen->VRAM[1]) free(screen->VRAM[1]);
+        free(screen->VRAM);
     }
 
-    p_Window = SDL_CreateWindow("Affichage VRAM",
-        SDL_WINDOWPOS_CENTERED,
-        SDL_WINDOWPOS_CENTERED,
-        W_WIDTH, W_HEIGHT,
-        SDL_WINDOW_SHOWN);
-
-    p_Render = SDL_CreateRenderer(p_Window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-
-    if(!p_Window || !p_Render) {
-        SDL_Log("Erreur fenêtre ou rendu: %s\n", SDL_GetError());
-        exit(EXIT_FAILURE);
-    }
-
-    texture = SDL_CreateTexture(
-        p_Render,
-        SDL_PIXELFORMAT_ARGB8888,
-        SDL_TEXTUREACCESS_STREAMING,
-        W_WIDTH, W_HEIGHT
-    );
-
-    if (!texture) {
-        SDL_Log("Erreur création texture: %s\n", SDL_GetError());
-        exit(EXIT_FAILURE);
-    }
-}
-
-void ecran_inputs(void)
-{
-    while(SDL_PollEvent(&event)) {
-        if(SDL_QUIT == event.type) ecran_actif = SDL_FALSE;
-        if(SDL_KEYDOWN == event.type) {
-            switch(event.key.keysym.sym) {
-                case SDLK_ESCAPE: ecran_actif = SDL_FALSE;
-                break;
-            }
-        }
-    }
-}
-
-void ecran_affiche_pixels(void)
-{
-    SDL_UpdateTexture(texture, NULL, vram, W_WIDTH * sizeof(Uint32));
-    SDL_RenderCopy(p_Render, texture, NULL, NULL);
-}
-
-void ecran_clean(void)
-{
-    SDL_DestroyTexture(texture);
-    SDL_DestroyRenderer(p_Render);
-    SDL_DestroyWindow(p_Window);
+    if(screen->framebuffer != NULL) SDL_DestroyTexture(screen->framebuffer);
+    if(screen->renderer != NULL) SDL_DestroyRenderer(screen->renderer);
+    if(screen->window != NULL) SDL_DestroyWindow(screen->window);
     SDL_Quit();
 }
 
-// VRAM en 32 bits, double buffer (2 écrans)
+
+void llmp16_screen_render(llmp16_screen_t screen)
+{
+    // Étape 1 : Copier la VRAM 1 dans la texture
+    uint8_t *pixels;
+    int pitch;
+    if (SDL_LockTexture(screen.framebuffer, NULL, (void**)&pixels, &pitch) == 0)
+    {
+        for (int y = 0; y < LLMP_SCREEN_HEIGHT; ++y)
+        {
+            memcpy(pixels + y * pitch, screen.VRAM[1] + y * LLMP_SCREEN_WIDTH, LLMP_SCREEN_WIDTH);
+        }
+        SDL_UnlockTexture(screen.framebuffer);
+    }
+
+    // Étape 2 : Affichage de la texture
+    SDL_RenderClear(screen.renderer);
+    SDL_RenderCopy(screen.renderer, screen.framebuffer, NULL, NULL);
+    SDL_RenderPresent(screen.renderer);
+
+    // Etape 3 : On échange VRAM 1 et VRAM 0
+    uint8_t* tmp = screen.VRAM[0];
+    screen.VRAM[0] = screen.VRAM[1];
+    screen.VRAM[1] = tmp;
+}
+
