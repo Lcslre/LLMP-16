@@ -47,7 +47,6 @@ void llmp16_dma_step(llmp16_t *cpu, llmp16_dma_t *dma)
 
         dma->stat |= DMA_STAT_DONE;
 
-        // IRQ if enabled
         if (dma->ctrl & DMA_CTRL_IRQ_EN) {
             dma->irq_line = true;
             // TODO : interruputions

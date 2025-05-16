@@ -30,27 +30,17 @@ void llmp16_init(llmp16_t *vm)
     for (int i = 0; i < LLMP_VRAM_BANKS; i++) {
         vm->VRAM[i] = (uint8_t *)malloc(LLMP_VRAM_BANK_SIZE);
     }
-    vm->keyboard.head = 0;
-    vm->keyboard.tail = 0;
-    vm->mmu.segments[0].type = MMU_MAP_RAM;
-    vm->mmu.segments[0].bank = 0;
-    vm->mmu.segments[1].type = MMU_MAP_RAM;
-    vm->mmu.segments[1].bank = 0;
-    vm->timer1.count = 0;
-    vm->timer1.PSC = 0;
-    vm->timer1.status = 0;
-    vm->timer1.value = 0;
-    vm->timer1.init_value = 0;
-    vm->timer2.count = 0;
-    vm->timer2.PSC = 0;
-    vm->timer2.status = 0;
-    vm->timer2.value = 0;
-    vm->timer2.init_value = 0;
-    vm->timer3.count = 0;
-    vm->timer3.PSC = 0;
-    vm->timer3.status = 0;
-    vm->timer3.value = 0;
-    vm->timer3.init_value = 0;
+    
+    llmp16_keyb_init(&vm->keyboard);
+    
+    llmp16_mmu_init(&vm->mmu);
+
+    llmp16_timer_init(&vm->timer1, 0, 0, 0);
+    llmp16_timer_init(&vm->timer2, 0, 0, 0);
+    llmp16_timer_init(&vm->timer3, 0, 0, 0);
+
+    vm->clk = 0;
+    
     for (int i = 0; i < LLMP_IO_PORTS; i++) {
         for (int j = 0; j < LLMP_IO_REGS; j++) {
             vm->IO[i][j] = 0;

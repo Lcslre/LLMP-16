@@ -349,9 +349,9 @@ void execute(llmp16_t *cpu, instr_t in)
         cpu->IO[port][reg] = cpu->R[in.X];
  
          /* sélection d'une banque : OUT Rx, $0000 */
-        if (port == 0x00 && reg == 0x00) {
-            cpu->bank = cpu->R[in.X] & 0xFF;
-        }
+        // if (port == 0x00 && reg == 0x00) {
+        //     //cpu->bank = cpu->R[in.X] & 0xFF;
+        // }
 
         /* sélection d'une banque de VRAM: OUT Rx, $0001 */
         if (port == 0x00 && reg == 0x01) {

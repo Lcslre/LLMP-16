@@ -1,8 +1,14 @@
 #include "llmp16.h"
 #include <SDL2/SDL.h>
 
-void llmp16_keyb_init()
+void llmp16_keyb_init(llmp16_keyboard_t *kb)
 {
+    kb->head = 0;
+    kb->tail = 0;
+    for (int i = 0; i < LLMP_KEY_QUEUE_SIZE; i++) {
+        kb->keys[i] = 0;
+    }
+
     SDL_Init(SDL_INIT_VIDEO);
     SDL_StartTextInput();
 }

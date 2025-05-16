@@ -62,7 +62,7 @@ typedef struct {
    uint8_t tail;
 } llmp16_keyboard_t;
 
-void llmp16_keyb_init();
+void llmp16_keyb_init(llmp16_keyboard_t *kb);
 
 /* La fonction llmp16_keyboard_scan() est appelée à chaque itération de la boucle principale de la machine virtuelle.
    Elle permet de scanner l'état du clavier et d'ajouter les touches pressées à la file d'attente. */
@@ -106,6 +106,9 @@ typedef struct {
   llmp16_mmu_mapping_t segments[2]; // segment 0: 0x0000-7FFF, segment 1: 0x8000-FFFF
 } llmp16_mmu_t;
 
+void llmp16_mmu_init(llmp16_mmu_t *mmu);
+void llmp16_mmu_update(llmp16_t *cpu);
+
 /*============================== Machine Virtuelle ==============================*/
 
 typedef struct llmp16_s {
@@ -113,20 +116,16 @@ typedef struct llmp16_s {
    uint16_t PC;                         /* Program Counter    */
    uint16_t SP;                         /* Stack Pointer      */
    uint8_t  FLAGS;                      /* NZCV, bits 3..0    */
-   uint8_t  bank;                       /* Current ROM bank   */
    uint8_t  vbank;                       /* Current VRAM bank   */
 
    bool halted;
- 
-   // uint8_t  ROM[LLMP_ROM_BANKS][LLMP_ROM_BANK_SIZE];
-   // uint8_t  DISK[LLMP_DISK_BANKS][LLMP_DISK_BANK_SIZE];
-   // uint8_t  RAM[LLMP_RAM_BANKS][LLMP_RAM_SIZE];
-   // uint8_t  VRAM[LLMP_VRAM_BANKS][LLMP_VRAM_BANK_SIZE];
 
-   uint8_t  **ROM;
-   uint8_t  **DISK;
-   uint8_t  **RAM;
-   uint8_t  **VRAM;
+   uint8_t  **ROM; // uint8_t  ROM[LLMP_ROM_BANKS][LLMP_ROM_BANK_SIZE];
+   uint8_t  **DISK; // uint8_t  DISK[LLMP_DISK_BANKS][LLMP_DISK_BANK_SIZE];
+   uint8_t  **RAM; // uint8_t  RAM[LLMP_RAM_BANKS][LLMP_RAM_SIZE];
+   uint8_t  **VRAM; // uint8_t  VRAM[LLMP_VRAM_BANKS][LLMP_VRAM_BANK_SIZE];
+
+   uint64_t clk;
 
    llmp16_keyboard_t keyboard;
 
@@ -138,6 +137,10 @@ typedef struct llmp16_s {
 
  
    uint16_t IO[LLMP_IO_PORTS][LLMP_IO_REGS];  /* 16‑bit regs  */
+
+   // Interruptions
+   uint16_t int_vector_pending;
+   bool int_pending;
 
 } llmp16_t;
 
@@ -184,8 +187,6 @@ static inline void flag_sub_cv(llmp16_t *cpu, uint16_t a, uint16_t b, uint32_t r
 }
  
 /*============== Routines de manipulation de la mémoire ==============*/
-
-void llmp16_mmu_update(llmp16_t *cpu);
 
 static inline uint8_t mem_read8(llmp16_t *cpu, uint16_t addr) {
   llmp16_mmu_mapping_t map = (addr < 0x8000) ? cpu->mmu.segments[0] : cpu->mmu.segments[1];
@@ -238,11 +239,17 @@ static inline void vram_write(llmp16_t *cpu, uint16_t addr, uint8_t v)
  
 static inline void llmp16_reset(llmp16_t *cpu)
 {
-   memset(cpu, 0, sizeof *cpu);
-   cpu->SP   = 0xFFFF;   /* on initialise la pile (descendante)   */
-   cpu->PC   = 0x0000;   
-   cpu->bank = 0;
+   cpu->PC = 0;
+   cpu->SP = 0xFFFF; // Initialisation de la pile
+   cpu->FLAGS = 0;
    cpu->vbank = 0;
+   cpu->halted = false;
+   memset(cpu->R, 0, sizeof(cpu->R));
+   memset(cpu->IO, 0, sizeof(cpu->IO));
+   memset(cpu->DISK, 0, sizeof(cpu->DISK));
+   memset(cpu->RAM, 0, sizeof(cpu->RAM));
+   memset(cpu->VRAM, 0, sizeof(cpu->VRAM));
+   memset(cpu->ROM, 0, sizeof(cpu->ROM));
 }
 
  /*============== Routines de fetch/decode/execute ==============*/
