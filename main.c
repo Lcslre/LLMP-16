@@ -8,19 +8,15 @@
 
 void llmp16_init(llmp16_t *vm)
 {
-    vm->bank = 0;
     vm->vbank = 0;
     vm->PC = 0;
     vm->SP = 0xFFFF; // Initialisation de la pile
     vm->FLAGS = 0;
     vm->halted = false;
+
     vm->ROM = (uint8_t **)malloc(LLMP_ROM_BANKS * sizeof(uint8_t *));
     for (int i = 0; i < LLMP_ROM_BANKS; i++) {
         vm->ROM[i] = (uint8_t *)malloc(LLMP_ROM_BANK_SIZE);
-    }
-    vm->DISK = (uint8_t **)malloc(LLMP_DISK_BANKS * sizeof(uint8_t *));
-    for (int i = 0; i < LLMP_DISK_BANKS; i++) {
-        vm->DISK[i] = (uint8_t *)malloc(LLMP_DISK_BANK_SIZE);
     }
     vm->RAM = (uint8_t **)malloc(LLMP_RAM_BANKS * sizeof(uint8_t *));
     for (int i = 0; i < LLMP_RAM_BANKS; i++) {

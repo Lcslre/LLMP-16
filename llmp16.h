@@ -15,19 +15,17 @@
 *| Largeur bus données      | 16 bits                                           |
 *| Largeur bus adresses     | 16 bits adressés par octet (0–65 535)             |
 *| Registres généraux       | R0–R15 (R15 = ACC), PC, SP, FLAGS                 |
-*| ROM bancaire             | 128 banques × 32 Ko (total = 4 Mio)               |
-*| RAM                      | 32 Ko (map \$8000–\$FFFF)                         |
+*| ROM bancaire             | 256 banques × 16 Ko (total = 4 Mio)               |
+*| RAM                      | 256 banques × 16 Ko (total = 4 Mio)               |                       |
 *| VRAM                     | 128 Ko (320 * 200 * 8bpp) x 2                     |
 *| Ports E/S                | 16 ports * 16 registres                           |
 *| Endian                   | little‑endian (LSB à l’adresse la plus basse)     |
 */
  
-#define LLMP_ROM_BANKS   128
-#define LLMP_ROM_BANK_SIZE 0x8000  /* 32 KiB */
-#define LLMP_DISK_BANKS   128
-#define LLMP_DISK_BANK_SIZE 0x8000  /* 32 KiB */
-#define LLMP_RAM_BANKS   16
-#define LLMP_RAM_BANK_SIZE      0x8000  /* 32 KiB */
+#define LLMP_ROM_BANKS   256
+#define LLMP_ROM_BANK_SIZE 0x4000  /* 16 KiB */
+#define LLMP_RAM_BANKS   256
+#define LLMP_RAM_BANK_SIZE      0x4000  /* 16 KiB */
 #define LLMP_VRAM_BANKS   2
 #define LLMP_VRAM_BANK_SIZE 0x10000  /* 64 KiB */
 #define LLMP_IO_PORTS    16
@@ -93,7 +91,6 @@ void llmp16_timer_count(llmp16_timer_t *timer, uint8_t clk_counter);
 
 typedef enum {
   MMU_MAP_ROM,
-  MMU_MAP_DISK,
   MMU_MAP_RAM
 } llmp16_mmu_type_t;
 
@@ -103,7 +100,7 @@ typedef struct {
 } llmp16_mmu_mapping_t;
 
 typedef struct {
-  llmp16_mmu_mapping_t segments[2]; // segment 0: 0x0000-7FFF, segment 1: 0x8000-FFFF
+  llmp16_mmu_mapping_t segments[4]; // segment 0: 0x0000-0x3FFF, segment 1: 0x4000-0x7FFF, segment 2: 0x8000-0xBFFF, segment 3: 0xC000-0xFFFF
 } llmp16_mmu_t;
 
 void llmp16_mmu_init(llmp16_mmu_t *mmu);
@@ -121,7 +118,6 @@ typedef struct llmp16_s {
    bool halted;
 
    uint8_t  **ROM; // uint8_t  ROM[LLMP_ROM_BANKS][LLMP_ROM_BANK_SIZE];
-   uint8_t  **DISK; // uint8_t  DISK[LLMP_DISK_BANKS][LLMP_DISK_BANK_SIZE];
    uint8_t  **RAM; // uint8_t  RAM[LLMP_RAM_BANKS][LLMP_RAM_SIZE];
    uint8_t  **VRAM; // uint8_t  VRAM[LLMP_VRAM_BANKS][LLMP_VRAM_BANK_SIZE];
 
@@ -188,28 +184,51 @@ static inline void flag_sub_cv(llmp16_t *cpu, uint16_t a, uint16_t b, uint32_t r
  
 /*============== Routines de manipulation de la mémoire ==============*/
 
-static inline uint8_t mem_read8(llmp16_t *cpu, uint16_t addr) {
-  llmp16_mmu_mapping_t map = (addr < 0x8000) ? cpu->mmu.segments[0] : cpu->mmu.segments[1];
-  uint16_t offset = addr & 0x7FFF;
 
-  switch (map.type) {
-      case MMU_MAP_ROM:  return cpu->ROM[map.bank][offset];
-      case MMU_MAP_DISK: return cpu->DISK[map.bank][offset];
-      case MMU_MAP_RAM:  return cpu->RAM[map.bank][offset];
+// segment 0: 0x0000-0x3FFF, segment 1: 0x4000-0x7FFF, segment 2: 0x8000-0xBFFF, segment 3: 0xC000-0xFFFF
+static inline uint8_t mem_read8(llmp16_t *cpu, uint16_t addr) {
+
+   llmp16_mmu_mapping_t *map;
+
+  if (addr < 0x4000) {
+      map = &cpu->mmu.segments[0]; // 0x0000-0x3FFF
+  } else if (addr < 0x8000) {
+      map = &cpu->mmu.segments[1]; // 0x4000-0x7FFF
+  } else if (addr < 0xC000) {
+      map = &cpu->mmu.segments[2]; // 0x8000-0xBFFF
+  } else {
+      map = &cpu->mmu.segments[3]; // 0xC000-0xFFFF
+  }
+   // On ne garde que les 14 bits de poids faible
+  uint16_t offset = addr & 0x3FFF; // 0x0000-0x3FFF
+
+  switch (map->type) {
+      case MMU_MAP_ROM:  return cpu->ROM[map->bank][offset];
+      case MMU_MAP_RAM:  return cpu->RAM[map->bank][offset];
       default: return 0xFF;
   }
 }
 
 static inline void mem_write8(llmp16_t *cpu, uint16_t addr, uint8_t v) {
-  llmp16_mmu_mapping_t map = (addr < 0x8000) ? cpu->mmu.segments[0] : cpu->mmu.segments[1];
-  uint16_t offset = addr & 0x7FFF;
+ 
+   llmp16_mmu_mapping_t *map;
 
-  switch (map.type) {
-      case MMU_MAP_ROM:  return; /* On ne peut pas écrire dans la ROM */
-      case MMU_MAP_DISK: cpu->DISK[map.bank][offset] = v; break;
-      case MMU_MAP_RAM:  cpu->RAM[map.bank][addr] = v; break;
-      default: return;
+  if (addr < 0x4000) {
+      map = &cpu->mmu.segments[0]; // 0x0000-0x3FFF
+  } else if (addr < 0x8000) {
+      map = &cpu->mmu.segments[1]; // 0x4000-0x7FFF
+  } else if (addr < 0xC000) {
+      map = &cpu->mmu.segments[2]; // 0x8000-0xBFFF
+  } else {
+      map = &cpu->mmu.segments[3]; // 0xC000-0xFFFF
   }
+   // On ne garde que les 14 bits de poids faible
+   uint16_t offset = addr & 0x3FFF; // 0x0000-0x3FFF
+
+   switch (map->type) {
+      case MMU_MAP_RAM: cpu->RAM[map->bank][offset] = v; break;
+      default: break;
+   }
 }
  
 static inline uint16_t mem_read16(llmp16_t *cpu, uint16_t addr)
@@ -246,7 +265,6 @@ static inline void llmp16_reset(llmp16_t *cpu)
    cpu->halted = false;
    memset(cpu->R, 0, sizeof(cpu->R));
    memset(cpu->IO, 0, sizeof(cpu->IO));
-   memset(cpu->DISK, 0, sizeof(cpu->DISK));
    memset(cpu->RAM, 0, sizeof(cpu->RAM));
    memset(cpu->VRAM, 0, sizeof(cpu->VRAM));
    memset(cpu->ROM, 0, sizeof(cpu->ROM));
