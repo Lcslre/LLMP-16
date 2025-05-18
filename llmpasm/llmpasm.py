@@ -2,10 +2,15 @@
 
 import sys
 import re
+from typing import Type
 
 from tokens import *
 from instructions import *
 from sections import *
+
+
+class LexerError(Exception):
+	pass
 
 
 class Lexer:
@@ -13,9 +18,8 @@ class Lexer:
 	register = re.compile("r\\d")
 	label = re.compile("\\w+:")
 
-	symbols = []
-
-	def __init__(self, code: str) -> None:
+	def __init__(self, code: str):
+		self.symbols = []
 		self.str = [s.casefold() for s in code.split()]
 
 		self.lex()
@@ -34,11 +38,22 @@ class Lexer:
 				token = BANK()
 			elif s == ".data":
 				token = DATA()
+			else:
+				token = OPERATOR(token)
 
 			self.symbols.append(token)
 
-	def pop(self) -> TOKEN | None:
-		return self.symbols.pop(0) if len(self.symbols) else None
+	def pop(self, t : type | None = None) -> TOKEN | None:
+		res = self.symbols.pop(0) if len(self.symbols) else None
+
+		if t is not None:
+			if res is not None:
+				if not isinstance(res, t):
+					raise LexerError(f"Token '{res}' type is incorrect ({type(res)} is not {t})")
+			else:
+				raise LexerError("No more token available")
+
+		return res
 
 
 class ParsingError(Exception):
@@ -62,23 +77,25 @@ class Parser:
 			if context is None:
 				match token:
 					case BANK():
-						context = SBANK(self.lexer.pop())
+						context = SBANK(self.lexer.pop(IMM))
 					case DATA():
-						context = SDATA(self.lexer.pop())
+						context = SDATA(self.lexer.pop(IMM))
 					case _:
 						raise ParsingError("Not in a bank or data section")
 			else:
 				match token:
 					case BANK():
 						page.append(context)
-						context = SBANK(self.lexer.pop())
-					case SDATA():
+						context = SBANK(self.lexer.pop(IMM))
+					case DATA():
 						page.append(context)
-						context = SDATA(self.lexer.pop())
-					case token if token in ARITH.defs:
-						context.push(ARITH(token, 
-							self.lexer.pop(), 
-							self.lexer.pop() if ARITH.defs[token][1] > 1 else None))
+						context = SDATA(self.lexer.pop(IMM))
+					case OPERATOR(i=s):
+						match s:
+							case s if s in ARITH.defs:
+								context.push(ARITH(s, 
+									self.lexer.pop(IMM | REGISTER), 
+									self.lexer.pop(IMM | REGISTER) if ARITH.defs[s][1] > 1 else None))
 
 		return page
 

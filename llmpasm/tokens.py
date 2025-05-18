@@ -3,8 +3,16 @@ class TOKEN:
 	name = "Token"
 	i = None
 
+	__match_args__ = ("i")
+
 	def __repr__(self) -> str:
 		return self.name + (f" {self.i}" if self.i is not None else "")
+
+
+class OPERATOR(TOKEN):
+	name = "Operator"
+	def __init__(self, op: str) -> None:
+		self.i = op
 
 
 class BANK(TOKEN):
@@ -20,6 +28,7 @@ class IMM(TOKEN):
 	
 	def __init__(self, imm: str) -> None:
 		self.i = int(imm)
+
 
 class REGISTER(TOKEN):
 	name = "Reg"

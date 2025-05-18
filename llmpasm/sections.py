@@ -8,10 +8,11 @@ class SectionError(Exception):
 
 class SECTION:
 	name = "Section"
-	instructions = []
 	i = 0
 
 	def __init__(self, n: IMM) -> None:
+		self.instructions = []
+		
 		match n:
 			case IMM():
 				self.n = n.i
