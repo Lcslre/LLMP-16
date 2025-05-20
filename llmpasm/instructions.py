@@ -1,9 +1,10 @@
 import struct
 import binascii
+from abc import ABC, abstractmethod
 from tokens import IMM, REGISTER
 
 
-class INSTR:
+class INSTR(ABC):
 	""" Instruction base type """
 	name = "Instr"
 	x = None
@@ -12,6 +13,10 @@ class INSTR:
 	def __init__(self, x: IMM | REGISTER, y: IMM | REGISTER) -> None:
 		self.x = x
 		self.y = y
+
+	@abstractmethod
+	def compile(self) -> bytes:
+		pass
 
 	def __repr__(self) -> str:
 		return self.name \
@@ -43,7 +48,7 @@ class ARITH(INSTR):
 		self.op = op
 		self.name = self.defs[op][0]
 
-	def compile(self) -> bytearray:
+	def compile(self) -> bytes:
 		return bytes([
 			(1 << 4) + self.x.i, 
 			(self.y.i << 4) + self.defs[self.op][2]
