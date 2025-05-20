@@ -64,10 +64,9 @@ void llmp16_keyb_init(llmp16_keyboard_t *kb);
 
 /* La fonction llmp16_keyboard_scan() est appelée à chaque itération de la boucle principale de la machine virtuelle.
    Elle permet de scanner l'état du clavier et d'ajouter les touches pressées à la file d'attente. */
-void llmp16_keyboard_scan(llmp16_keyboard_t *kb);
+void llmp16_keyboard_scan(llmp16_t *cpu, llmp16_keyboard_t *kb);
 
 
-void llmp16_keyboard_update(llmp16_t *cpu, llmp16_keyboard_t *kb);
 
 
 /*====================================== TIMER ==========================================*/

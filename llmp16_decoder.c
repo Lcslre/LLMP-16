@@ -1,4 +1,5 @@
 #include "llmp16.h"
+#include <stdio.h>
 
 instr_t decode(llmp16_t *cpu, uint16_t instr)
 {
@@ -339,6 +340,8 @@ void execute(llmp16_t *cpu, instr_t in)
         uint8_t port = in.Y;
         uint8_t reg  = in.t;
         cpu->R[in.X] = cpu->IO[port][reg];
+        printf("Port : %d\n Reg : %d\n", port, reg);
+        printf("R : %d\n", cpu->R[4]);
         break;
      }
  

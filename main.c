@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <SDL2/SDL.h>
 #include <string.h>
 #include "llmp16.h"         // Structure de la VM
 
@@ -46,15 +47,7 @@ void llmp16_init(llmp16_t *vm)
 
 }
 
-int main() {
-    llmp16_t cpu;
-
-    llmp16_init(&cpu);
-
-    
-
-    
-    
-
+int main()
+{
     return 0;
 }
