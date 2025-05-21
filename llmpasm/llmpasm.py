@@ -81,6 +81,7 @@ class Parser:
 			if isinstance(token, COMMENT_OPEN):
 				while not isinstance(self.lexer.pop(TOKEN), COMMENT_CLOSE):
 					continue
+				continue
 
 			if context is None:
 				match token:
@@ -121,6 +122,8 @@ class Parser:
 								context.push(operation(s, reg, op2))
 							case _:
 								raise ParsingError(token.line, f"Unknown operator '{s}'")
+					case _:
+						raise ParsingError(token.line, f"Wrong token '{token}'")
 
 		return page
 
