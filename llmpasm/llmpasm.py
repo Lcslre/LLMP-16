@@ -14,24 +14,27 @@ class LexerError(Exception):
 
 
 class Lexer:
-	number = re.compile("-?\\d")
-	register = re.compile("r\\d")
-	label = re.compile("\\w+:")
+	number = re.compile(r"^-?\d+$")
+	hexnumber = re.compile(r"^0x\d+$")
+
+	register = re.compile(r"^r\d$")
+	label = re.compile(r"^\w+:$")
 
 	def __init__(self, code: str):
 		self.symbols = []
 		self.str = [s.casefold() for s in code.split()]
 
 		self.lex()
-		print(self.symbols)
 
 	def lex(self) -> None:
 		for s in self.str:
 			token = s
 			if re.match(self.number, s):
-				token = IMM(s)
+				token = IMM(int(s))
+			elif re.match(self.hexnumber, s):
+				token = IMM(int(s, 16))
 			elif re.match(self.register, s):
-				token = REGISTER(s)
+				token = REGISTER(int(s[1:]))
 			elif re.match(self.label, s):
 				token = LABEL(s)
 			elif s == ".bank":
