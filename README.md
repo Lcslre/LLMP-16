@@ -34,15 +34,18 @@ Pour accéder aux registres de configurations il faut utiliser les instructions 
 | LSR X Y | RX \>\> RY  | 1 | 0x1XY8 | N Z C |
 | ASR X Y | RX \>\> RY | 1 | 0x1XY9 | N Z C |
 | LSL X Y | RX \<\< RY | 1 | 0x1XYA | N Z C |
+
+| opcode | description | taille (mots) | format | flags |
+| :---: | :---: | :---: | :---: | :---: |
 | ADDI X imm16 | R15 \<- RX \+ imm | 2 | 0x2X00 0xnnnn | N Z C V |
 | SUBI X imm16 | R15 \<- RX \- imm | 2 | 00x2X01 0xnnnn | N Z C V |
 | MULI X imm16 | R15 \<- RX \* imm | 2 | 00x2X02 0xnnnn | N Z |
 | DIVI X imm16 | R15 \<- RX / imm | 2 | 0x2X03 0xnnnn | N Z |
 | SDIVI X imm16 |  | 2 | 0x2X04 0xnnnn |  |
-| CMPI X imm16 | RX \- imm et met à jour NZCV | 2 | 0x2X05 0xnnnn | N Z C V |
-| LSRI X imm16 | RX \>\> imm | 2 | 0x2X06 0xnnnn | N Z |
-| ASRI X imm16 | RX \>\> imm | 2 | 0x2X07 0xnnnn | N Z |
-| LSLI | RX \<\< imm | 2 | 0x2X08 0xnnnn | N Z |
+| CMPI X imm16 | RX \- imm et met à jour NZCV | 2 | 0x2X07 0xnnnn | N Z C V |
+| LSRI X imm16 | RX \>\> imm | 2 | 0x2X08 0xnnnn | N Z |
+| ASRI X imm16 | RX \>\> imm | 2 | 0x2X09 0xnnnn | N Z |
+| LSLI X imm16 | RX \<\< imm | 2 | 0x2X0A 0xnnnn | N Z |
 
       
 
