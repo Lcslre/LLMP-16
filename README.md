@@ -1,6 +1,5 @@
 # LLMP-16
-Machine virtuel
-
+Machine virtuelle
 
 ## Les ports d'entrées/sorties
 
@@ -16,10 +15,9 @@ Pour accéder aux registres de configurations il faut utiliser les instructions 
 | $4 |    Timer 2    | TODO |           TODO           | - | - |
 | $5 |    Timer 3    | TODO |           TODO           | - | - |
 
-
 ## Le jeu d’instructions
 
-   1. ## **Les instructions Arithmétiques** {#les-instructions-arithmétiques}
+### Les instructions arithmétiques
 
 | opcode | description | taille (mots) | format | flags |
 | :---: | :---: | :---: | :---: | :---: |
@@ -47,7 +45,7 @@ Pour accéder aux registres de configurations il faut utiliser les instructions 
 | ASRI X imm16 | RX \>\> imm | 2 | 0x2X09 0xnnnn | N Z |
 | LSLI X imm16 | RX \<\< imm | 2 | 0x2X0A 0xnnnn | N Z |
 
-   2. ## **Les instructions Logiques** {#les-instructions-logiques}
+### Les instructions logiques
 
 | opcode | description | taille (mots) | format | flags |
 | :---: | :---: | :---: | :---: | :---: |
@@ -64,7 +62,7 @@ Pour accéder aux registres de configurations il faut utiliser les instructions 
 | XORI X imm16 | R15 ← RX ^ imm | 2 | 0x4X02 0xnnnn  | N Z |
 | TSTI X imm16 | met à jour NZCV en fonction de RX & imm | 2 | 0x4003 0xnnnn  | N Z |
 
-   3. ## **Les instructions de contrôles mémoire** {#les-instructions-de-contrôles-mémoire}
+### Les instructions de contrôles mémoire
 
 | opcode | description | taille (mots) | format | flags |
 | :---: | :---: | :---: | :---: | :---: |
@@ -85,7 +83,7 @@ Pour accéder aux registres de configurations il faut utiliser les instructions 
 | VLDI X imm16 |  RX \<- VRAM\[imm16\] | 2 | 0x6X05 0xnnnn | \- |
 | VSTRI X imm16 | VRAM\[imm16\] \<- RX | 2 | 0x6X06 0xnnnn | \- |
 
-   4. ## **Les instructions de sauts** {#les-instructions-de-sauts}
+### Les instructions de sauts
 
 | opcode | description | taille (mots) | format | flags |
 | :---: | :---: | :---: | :---: | :---: |
@@ -113,7 +111,7 @@ Pour accéder aux registres de configurations il faut utiliser les instructions 
 | JVCI imm16 | Si V \= 0 PC ←imm | 2 | 0x8008 0xnnnn | \- |
 | CALL imm16 | PC ←imm PUSH PC | 2 | 0x8009 0xnnnn | \- |
 
-   5. ## **Les instructions spéciales** {#les-instructions-spéciales}
+### Les instructions spéciales
 
 | opcode | description | taille (mots) | format | flags |
 | :---: | :---: | :---: | :---: | :---: |
@@ -125,11 +123,7 @@ Pour accéder aux registres de configurations il faut utiliser les instructions 
 | IN X Y offset |  | 1 | 0x9XYO | \- |
 | OUT X Y offset |  | 1 | 0xAXYO | \- |
 
-
-
-
-   6. ## Code d'interruption
-
+## Code d'interruption
 
 | Numéro |	Déclenchement	| Description |
 | :---: | :---: | :---: |
@@ -149,4 +143,3 @@ Pour accéder aux registres de configurations il faut utiliser les instructions 
 | 0D	| - | - |
 | 0E  | - | - |
 | 0F	| - | - |
-## 
