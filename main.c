@@ -35,9 +35,9 @@ void llmp16_init(llmp16_t *vm)
     llmp16_timer_init(&vm->timer1, 0, 0, 0);
     llmp16_timer_init(&vm->timer2, 0, 0, 0);
     llmp16_timer_init(&vm->timer3, 0, 0, 0);
+    llmp16_screen_init(&vm->screen,vm->VRAM);
 
-    llmp16_pic_init(&vm->pic);
-
+    
     vm->clk = 0;
     
     for (int i = 0; i < LLMP_IO_PORTS; i++) {
@@ -51,12 +51,5 @@ void llmp16_init(llmp16_t *vm)
 
 int main()
 {
-    while(/*condition d'arret à definir*/){
-    llmp16_t* vm0;
-    llmp16_init(vm0);
-
-    //update interuption
-    llmp16_pic_update(vm0, vm0->pic);
-    }
     return 0;
 }
