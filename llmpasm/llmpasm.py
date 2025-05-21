@@ -100,7 +100,18 @@ class Parser:
 											operation = ARITH_I
 										case REGISTER():
 											operation = ARITH_R
-
+								context.push(operation(s, reg, op2))
+							case s if s in LOGIC.defs:
+								operation = LOGIC_R
+								reg = self.lexer.pop(REGISTER)
+								op2 = None
+								if LOGIC.defs[s][1] > 1:
+									op2 = self.lexer.pop(IMM | REGISTER)
+									match op2:
+										case IMM():
+											operation = LOGIC_I
+										case REGISTER():
+											operation = LOGIC_R
 								context.push(operation(s, reg, op2))
 
 		return page
