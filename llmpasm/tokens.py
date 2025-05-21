@@ -19,6 +19,14 @@ class BANK(TOKEN):
 	name = "Bank"
 
 
+class COMMENT_OPEN(TOKEN):
+	name = "/*"
+
+
+class COMMENT_CLOSE(TOKEN):
+	name = "*/"
+
+
 class IMM(TOKEN):
 	name = "Imm"
 	

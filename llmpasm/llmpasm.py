@@ -36,6 +36,10 @@ class Lexer:
 				token = LABEL(s)
 			elif s == ".bank":
 				token = BANK()
+			elif s == "/*":
+				token = COMMENT_OPEN()
+			elif s == "*/":
+				token = COMMENT_CLOSE()
 			else:
 				token = OPERATOR(token)
 
@@ -68,6 +72,10 @@ class Parser:
 			except LexerError:
 				page.append(context)
 				break
+
+			if isinstance(token, COMMENT_OPEN):
+				while not isinstance(self.lexer.pop(TOKEN), COMMENT_CLOSE):
+					continue
 
 			if context is None:
 				match token:
@@ -106,6 +114,8 @@ class Parser:
 										case REGISTER():
 											operation = LOGIC_R
 								context.push(operation(s, reg, op2))
+							case _:
+								raise ParsingError(f"Unknown operator '{s}'")
 
 		return page
 
