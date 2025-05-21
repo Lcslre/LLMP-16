@@ -78,40 +78,40 @@ Pour accéder aux registres de configurations il faut utiliser les instructions 
 
 | opcode | description | taille (mots) | format | flags |
 | :---: | :---: | :---: | :---: | :---: |
-| MOVI X imm16 | RX \<- imm16 | 2 | 0xAX00 0xnnnn | \- |
-| LDI X imm16 | RX \<- MEM\[imm16\] | 2 | 0xAX01 0xnnnn | \- |
-| STRI X imm16 | MEM\[imm16\] \<- RX | 2 | 0xAX02 0xnnnn | \- |
-| PUSHI X | MEM\[--SP\] \<- RX  | 1 | 0xA003 0xnnnn | \- |
-| VLDI X imm16 |  RX \<- VRAM\[imm16\] | 2 | 0xAX05 0xnnnn | \- |
-| VSTRI X imm16 | VRAM\[imm16\] \<- RX | 2 | 0xAX06 0xnnnn | \- |
+| MOVI X imm16 | RX \<- imm16 | 2 | 0x6X00 0xnnnn | \- |
+| LDI X imm16 | RX \<- MEM\[imm16\] | 2 | 0x6X01 0xnnnn | \- |
+| STRI X imm16 | MEM\[imm16\] \<- RX | 2 | 0x6X02 0xnnnn | \- |
+| PUSHI X | MEM\[--SP\] \<- RX  | 1 | 0x6003 0xnnnn | \- |
+| VLDI X imm16 |  RX \<- VRAM\[imm16\] | 2 | 0x6X05 0xnnnn | \- |
+| VSTRI X imm16 | VRAM\[imm16\] \<- RX | 2 | 0x6X06 0xnnnn | \- |
 
    4. ## **Les instructions de sauts** {#les-instructions-de-sauts}
 
 | opcode | description | taille (mots) | format | flags |
 | :---: | :---: | :---: | :---: | :---: |
-| JUMP X | PC ←RX | 1 | 0x6X00 | \- |
-| JEQ X | Si Z \= 1 PC ←RX | 1 | 0x6X01 | \- |
-| JNE X | Si Z \= 0 PC ←RX | 1 | 0x6X02 | \- |
-| JCS X | Si C \= 1 PC ←RX | 1 | 0x6X03 | \- |
-| JCC X | Si C \= 0 PC ←RX | 1 | 0x6X04 | \- |
-| JNS X | Si N \= 1 PC ←RX | 1 | 0x6X05 | \- |
-| JNC X | Si N \= 0 PC ←RX | 1 | 0x6X06 | \- |
-| JVS X | Si V \= 1 PC ←RX | 1 | 0x6X07 | \- |
-| JVC X | Si V \= 0 PC ←RX | 1 | 0x6X08 | \- |
-| RET | POP PC | 1 | 0x6X09 | \- |
+| JUMP X | PC ←RX | 1 | 0x7X00 | \- |
+| JEQ X | Si Z \= 1 PC ←RX | 1 | 0x7X01 | \- |
+| JNE X | Si Z \= 0 PC ←RX | 1 | 0x7X02 | \- |
+| JCS X | Si C \= 1 PC ←RX | 1 | 0x7X03 | \- |
+| JCC X | Si C \= 0 PC ←RX | 1 | 0x7X04 | \- |
+| JNS X | Si N \= 1 PC ←RX | 1 | 0x7X05 | \- |
+| JNC X | Si N \= 0 PC ←RX | 1 | 0x7X06 | \- |
+| JVS X | Si V \= 1 PC ←RX | 1 | 0x7X07 | \- |
+| JVC X | Si V \= 0 PC ←RX | 1 | 0x7X08 | \- |
+| RET | POP PC | 1 | 0x7X09 | \- |
 
 | opcode | description | taille (mots) | format | flags |
 | :---: | :---: | :---: | :---: | :---: |
-| JUMPI imm16 | PC ←imm | 2 | 0x7000 0xnnnn | \- |
-| JEQI imm16 | Si Z \= 1 PC ←imm | 2 | 0x7001 0xnnnn | \- |
-| JNEI imm16 | Si Z \= 0 PC ←imm | 2 | 0x7002 0xnnnn | \- |
-| JCSI imm16 | Si C \= 1 PC ←imm | 2 | 0x7003 0xnnnn | \- |
-| JCCI imm16 | Si C \= 0 PC ←imm | 2 | 0x7004 0xnnnn | \- |
-| JNSI imm16 | Si N \= 1 PC ←imm | 2 | 0x7005 0xnnnn | \- |
-| JNCI imm16 | Si N \= 0 PC ←imm | 2 | 0x7006 0xnnnn | \- |
-| JVSI imm16 | Si V \= 1 PC ←imm | 2 | 0x7007 0xnnnn | \- |
-| JVCI imm16 | Si V \= 0 PC ←imm | 2 | 0x7008 0xnnnn | \- |
-| CALL imm16 | PC ←imm PUSH PC | 2 | 0x7009 0xnnnn | \- |
+| JUMPI imm16 | PC ←imm | 2 | 0x8000 0xnnnn | \- |
+| JEQI imm16 | Si Z \= 1 PC ←imm | 2 | 0x8001 0xnnnn | \- |
+| JNEI imm16 | Si Z \= 0 PC ←imm | 2 | 0x8002 0xnnnn | \- |
+| JCSI imm16 | Si C \= 1 PC ←imm | 2 | 0x8003 0xnnnn | \- |
+| JCCI imm16 | Si C \= 0 PC ←imm | 2 | 0x8004 0xnnnn | \- |
+| JNSI imm16 | Si N \= 1 PC ←imm | 2 | 0x8005 0xnnnn | \- |
+| JNCI imm16 | Si N \= 0 PC ←imm | 2 | 0x8006 0xnnnn | \- |
+| JVSI imm16 | Si V \= 1 PC ←imm | 2 | 0x8007 0xnnnn | \- |
+| JVCI imm16 | Si V \= 0 PC ←imm | 2 | 0x8008 0xnnnn | \- |
+| CALL imm16 | PC ←imm PUSH PC | 2 | 0x8009 0xnnnn | \- |
 
    5. ## **Les instructions spéciales** {#les-instructions-spéciales}
 
@@ -122,7 +122,7 @@ Pour accéder aux registres de configurations il faut utiliser les instructions 
 | WFI |  | 1 |  | \- |
 | INT |  | 1 |  | \- |
 | IRET |  | 1 |  | \- |
-| IN X Y offset |  | 1 | 0x8XYO | \- |
-| OUT X Y offset |  | 1 | 0x9XYO | \- |
+| IN X Y offset |  | 1 | 0x9XYO | \- |
+| OUT X Y offset |  | 1 | 0xAXYO | \- |
 
 ## 
