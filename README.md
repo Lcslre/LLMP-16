@@ -81,7 +81,7 @@ Pour accéder aux registres de configurations il faut utiliser les instructions 
 | MOVI X imm16 | RX \<- imm16 | 2 | 0x6X00 0xnnnn | \- |
 | LDI X imm16 | RX \<- MEM\[imm16\] | 2 | 0x6X01 0xnnnn | \- |
 | STRI X imm16 | MEM\[imm16\] \<- RX | 2 | 0x6X02 0xnnnn | \- |
-| PUSHI X | MEM\[--SP\] \<- RX  | 1 | 0x6003 0xnnnn | \- |
+| PUSHI imm16 | MEM\[--SP\] \<- imm16  | 2 | 0x6003 0xnnnn | \- |
 | VLDI X imm16 |  RX \<- VRAM\[imm16\] | 2 | 0x6X05 0xnnnn | \- |
 | VSTRI X imm16 | VRAM\[imm16\] \<- RX | 2 | 0x6X06 0xnnnn | \- |
 
