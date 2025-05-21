@@ -43,15 +43,11 @@ class Lexer:
 
 			self.symbols.append(token)
 
-	def pop(self, t : type | None = None) -> TOKEN | None:
+	T = TypeVar("T")
+	def pop(self, t : Type[T]) -> T:
 		res = self.symbols.pop(0) if len(self.symbols) else None
 
-		if t is not None:
-			if res is not None:
-				if not isinstance(res, t):
-					raise LexerError(f"Token '{res}' type is incorrect ({type(res)} is not {t})")
-			else:
-				raise LexerError("No more token available")
+		if res is not None:
 			if not isinstance(res, t):
 				raise LexerError(f"Token '{res}' type is incorrect ({type(res)} is not {t})")
 		else:
@@ -94,14 +90,25 @@ class Parser:
 					case OPERATOR(i=s):
 						match s:
 							case s if s in ARITH.defs:
-								context.push(ARITH(s, 
-									self.lexer.pop(IMM | REGISTER), 
-									self.lexer.pop(IMM | REGISTER) if ARITH.defs[s][1] > 1 else None))
+								operation = ARITH_R
+								reg = self.lexer.pop(REGISTER)
+								op2 = None
+								if ARITH.defs[s][1] > 1:
+									op2 = self.lexer.pop(IMM | REGISTER)
+									match op2:
+										case IMM():
+											operation = ARITH_I
+										case REGISTER():
+											operation = ARITH_R
+
+								context.push(operation(s, reg, op2))
 
 		return page
 
 
 if __name__ == "__main__":
+	#sys.tracebacklimit = 0
+
 	with open(sys.argv[1]) as file:
 		lexer = Lexer(file.read())
 		for s in Parser(lexer).parse():
