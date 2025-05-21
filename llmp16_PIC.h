@@ -41,6 +41,8 @@ void llmp16_pic_init(llmp16_pic_t *pic);
 void llmp16_pic_raise_irq(llmp16_pic_t *pic, uint8_t irq_line);
 void llmp16_pic_end_of_interrupt(llmp16_pic_t *pic, uint16_t EOI);
 uint16_t llmp16_pic_get_highest_pending(llmp16_pic_t *pic);
+void llmp16_pic_readIO(llmp16_t *cpu, llmp16_pic_t *pic);
+void llmp16_pic_writeIO(llmp16_t *cpu, llmp16_pic_t *pic);
 void llmp16_pic_update(llmp16_t *cpu, llmp16_pic_t *pic);
 
 

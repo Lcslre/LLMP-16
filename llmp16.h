@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdio.h>
+#include "llmp16_PIC.h"
 
 /*
 *                       Spécifications de la machine virtuelle
@@ -136,6 +137,7 @@ typedef struct llmp16_s {
    // Interruptions
    uint16_t int_vector_pending;
    bool int_pending;
+   llmp16_pic_t pic;
 
 } llmp16_t;
 
