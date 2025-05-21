@@ -2,15 +2,12 @@
 
 import sys
 import re
-from typing import Type
+from typing import Type, TypeVar
 
 from tokens import *
 from instructions import *
 from sections import *
-
-
-class LexerError(Exception):
-	pass
+from errors import *
 
 
 class Lexer:
@@ -55,12 +52,12 @@ class Lexer:
 					raise LexerError(f"Token '{res}' type is incorrect ({type(res)} is not {t})")
 			else:
 				raise LexerError("No more token available")
+			if not isinstance(res, t):
+				raise LexerError(f"Token '{res}' type is incorrect ({type(res)} is not {t})")
+		else:
+			raise LexerError("No more token available")
 
 		return res
-
-
-class ParsingError(Exception):
-	pass
 
 
 class Parser:
@@ -72,8 +69,9 @@ class Parser:
 		context = None
 
 		while True:
-			token = self.lexer.pop()
-			if token is None:
+			try:
+				token = self.lexer.pop(TOKEN)
+			except LexerError:
 				page.append(context)
 				break
 

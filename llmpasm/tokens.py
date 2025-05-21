@@ -26,15 +26,15 @@ class DATA(TOKEN):
 class IMM(TOKEN):
 	name = "Imm"
 	
-	def __init__(self, imm: str) -> None:
-		self.i = int(imm)
+	def __init__(self, imm: int) -> None:
+		self.i = imm
 
 
 class REGISTER(TOKEN):
 	name = "Reg"
 
-	def __init__(self, reg: str) -> None:
-		self.i = int(reg[1:])
+	def __init__(self, reg: int) -> None:
+		self.i = reg
 
 
 class LABEL(TOKEN):

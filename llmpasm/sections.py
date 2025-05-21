@@ -1,9 +1,6 @@
 from tokens import IMM
 from instructions import INSTR
-
-
-class SectionError(Exception):
-	pass
+from errors import SectionError
 
 
 class SECTION:
