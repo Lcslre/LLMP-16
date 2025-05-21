@@ -19,10 +19,6 @@ class BANK(TOKEN):
 	name = "Bank"
 
 
-class DATA(TOKEN): 
-	name = "Data"
-
-
 class IMM(TOKEN):
 	name = "Imm"
 	

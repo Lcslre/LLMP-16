@@ -36,8 +36,6 @@ class Lexer:
 				token = LABEL(s)
 			elif s == ".bank":
 				token = BANK()
-			elif s == ".data":
-				token = DATA()
 			else:
 				token = OPERATOR(token)
 
@@ -75,8 +73,6 @@ class Parser:
 				match token:
 					case BANK():
 						context = SBANK(self.lexer.pop(IMM))
-					case DATA():
-						context = SDATA(self.lexer.pop(IMM))
 					case _:
 						raise ParsingError("Not in a bank or data section")
 			else:
@@ -84,9 +80,6 @@ class Parser:
 					case BANK():
 						page.append(context)
 						context = SBANK(self.lexer.pop(IMM))
-					case DATA():
-						page.append(context)
-						context = SDATA(self.lexer.pop(IMM))
 					case OPERATOR(i=s):
 						match s:
 							case s if s in ARITH.defs:

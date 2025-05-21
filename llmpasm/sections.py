@@ -28,7 +28,3 @@ class SECTION:
 
 class SBANK(SECTION):
 	name = "Bank"
-
-
-class SDATA(SECTION):
-	name = "Data"
