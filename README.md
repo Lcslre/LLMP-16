@@ -75,15 +75,20 @@ Pour accéder aux registres de configurations il faut utiliser les instructions 
 | MOV X Y | RX \<- RY | 1 | 0x5XY0 | \- |
 | LD X Y | RX \<- MEM\[RY\] | 1 | 0x5XY1 | \- |
 | STR X Y | MEM\[RX\] \<- RY | 1 | 0x5XY2 | \- |
+| PUSH X | MEM\[--SP\] \<- RX  | 1 | 0x5X03 | \- |
+| POP Y | RX \<- MEM\[SP++\] | 1 | 0x5X04 | \- |
 | VLD X Y | RX \<- MEM\[RY\] | 1 | 0x5XY5 | \- |
 | VSTR X Y | MEM\[RX\] \<- RY | 1 | 0x5XY6 | \- |
+
+| opcode | description | taille (mots) | format | flags |
+| :---: | :---: | :---: | :---: | :---: |
 | MOVI X imm16 | RX \<- imm16 | 2 | 0XAX00 0xnnnn | \- |
 | LDI X imm16 | RX \<- MEM\[imm16\] | 2 | 0XAX01 0xnnnn | \- |
 | STRI X imm16 | MEM\[imm16\] \<- RX | 2 | 0XAX02 0xnnnn | \- |
-| VLDI X imm16 |  RX \<- VRAM\[imm16\] | 2 | 0XAX03 0xnnnn | \- |
-| VSTRI X imm16 | VRAM\[imm16\] \<- RX | 2 | 0XAX04 0xnnnn | \- |
-| PUSH X | MEM\[--SP\] \<- RX  | 1 | 0x5X03 | \- |
-| POP Y | RX \<- MEM\[SP++\] | 1 | 0x5X04 | \- |
+| PUSHI X | MEM\[--SP\] \<- RX  | 1 | 0x5X03 | \- |
+| POPI Y | RX \<- MEM\[SP++\] | 1 | 0x5X04 | \- |
+| VLDI X imm16 |  RX \<- VRAM\[imm16\] | 2 | 0XAX05 0xnnnn | \- |
+| VSTRI X imm16 | VRAM\[imm16\] \<- RX | 2 | 0XAX06 0xnnnn | \- |
 
    4. ## **Les instructions de sauts** {#les-instructions-de-sauts}
 
