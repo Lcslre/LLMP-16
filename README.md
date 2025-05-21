@@ -34,27 +34,33 @@ Pour accéder aux registres de configurations il faut utiliser les instructions 
 | LSR X Y | RX \>\> RY  | 1 | 0x1XY8 | N Z C |
 | ASR X Y | RX \>\> RY | 1 | 0x1XY9 | N Z C |
 | LSL X Y | RX \<\< RY | 1 | 0x1XYA | N Z C |
+
+| opcode | description | taille (mots) | format | flags |
+| :---: | :---: | :---: | :---: | :---: |
 | ADDI X imm16 | R15 \<- RX \+ imm | 2 | 0x2X00 0xnnnn | N Z C V |
 | SUBI X imm16 | R15 \<- RX \- imm | 2 | 00x2X01 0xnnnn | N Z C V |
 | MULI X imm16 | R15 \<- RX \* imm | 2 | 00x2X02 0xnnnn | N Z |
 | DIVI X imm16 | R15 \<- RX / imm | 2 | 0x2X03 0xnnnn | N Z |
 | SDIVI X imm16 |  | 2 | 0x2X04 0xnnnn |  |
-| CMPI X imm16 | RX \- imm et met à jour NZCV | 2 | 0x2X05 0xnnnn | N Z C V |
-| LSRI X imm16 | RX \>\> imm | 2 | 0x2X06 0xnnnn | N Z |
-| ASRI X imm16 | RX \>\> imm | 2 | 0x2X07 0xnnnn | N Z |
-| LSLI | RX \<\< imm | 2 | 0x2X08 0xnnnn | N Z |
+| CMPI X imm16 | RX \- imm et met à jour NZCV | 2 | 0x2X07 0xnnnn | N Z C V |
+| LSRI X imm16 | RX \>\> imm | 2 | 0x2X08 0xnnnn | N Z |
+| ASRI X imm16 | RX \>\> imm | 2 | 0x2X09 0xnnnn | N Z |
+| LSLI X imm16 | RX \<\< imm | 2 | 0x2X0A 0xnnnn | N Z |
 
    2. ## **Les instructions Logiques** {#les-instructions-logiques}
 
 | opcode | description | taille (mots) | format | flags |
 | :---: | :---: | :---: | :---: | :---: |
 | AND X Y | R15 ← RX & RY | 1 | 0x3XY0 | N Z |
-| OR X Y | R15 ← RX | RY | 1 | 0x3XY1 | N Z |
+| OR X Y | R15 ← RX \| RY | 1 | 0x3XY1 | N Z |
 | XOR X Y | R15 ←RX ^ RY | 1 | 0x3XY2 | N Z |
 | NOT X | RX ← \~RX | 1 | 0x30Y3 | N Z |
 | TST X Y | met à jour NZCV en fonction de RX & RY | 1 | 0x3XY4 | N Z |
+
+| opcode | description | taille (mots) | format | flags |
+| :---: | :---: | :---: | :---: | :---: |
 | ANDI X imm16 | R15 ← RX & imm | 2 | 0x4X00 0xnnnn | N Z |
-| ORI X imm16 | R15 ← RX | imm | 2 | 0x4X01 0xnnnn  | N Z |
+| ORI X imm16 | R15 ← RX \| imm | 2 | 0x4X01 0xnnnn  | N Z |
 | XORI X imm16 | R15 ← RX ^ imm | 2 | 0x4X02 0xnnnn  | N Z |
 | TSTI X imm16 | met à jour NZCV en fonction de RX & imm | 2 | 0x4003 0xnnnn  | N Z |
 
