@@ -54,12 +54,15 @@ Pour accéder aux registres de configurations il faut utiliser les instructions 
 | opcode | description | taille (mots) | format | flags |
 | :---: | :---: | :---: | :---: | :---: |
 | AND X Y | R15 ← RX & RY | 1 | 0x3XY0 | N Z |
-| OR X Y | R15 ← RX | RY | 1 | 0x3XY1 | N Z |
+| OR X Y | R15 ← RX \| RY | 1 | 0x3XY1 | N Z |
 | XOR X Y | R15 ←RX ^ RY | 1 | 0x3XY2 | N Z |
 | NOT X | RX ← \~RX | 1 | 0x30Y3 | N Z |
 | TST X Y | met à jour NZCV en fonction de RX & RY | 1 | 0x3XY4 | N Z |
+
+| opcode | description | taille (mots) | format | flags |
+| :---: | :---: | :---: | :---: | :---: |
 | ANDI X imm16 | R15 ← RX & imm | 2 | 0x4X00 0xnnnn | N Z |
-| ORI X imm16 | R15 ← RX | imm | 2 | 0x4X01 0xnnnn  | N Z |
+| ORI X imm16 | R15 ← RX \| imm | 2 | 0x4X01 0xnnnn  | N Z |
 | XORI X imm16 | R15 ← RX ^ imm | 2 | 0x4X02 0xnnnn  | N Z |
 | TSTI X imm16 | met à jour NZCV en fonction de RX & imm | 2 | 0x4003 0xnnnn  | N Z |
 
