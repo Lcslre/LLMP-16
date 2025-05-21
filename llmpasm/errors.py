@@ -1,13 +1,9 @@
 class LlmpAsmError(Exception):
-	# TODO: line number
-	pass
+	def __init__(self, line: int, msg: str):
+		super().__init__(f"At line {line}: {msg}")
 
 
 class LexerError(LlmpAsmError):
-	pass
-
-
-class SectionError(LlmpAsmError):
 	pass
 
 

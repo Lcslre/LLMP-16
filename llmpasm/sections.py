@@ -1,6 +1,5 @@
 from tokens import IMM
 from instructions import INSTR
-from errors import SectionError
 
 
 class SECTION:
@@ -9,12 +8,7 @@ class SECTION:
 
 	def __init__(self, n: IMM) -> None:
 		self.instructions = []
-		
-		match n:
-			case IMM():
-				self.n = n.i
-			case _:
-				raise SectionError("Bank index is not an integer")
+		self.n = n.i
 
 	def push(self, instr: INSTR) -> None:
 		self.instructions.append(instr)

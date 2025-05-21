@@ -17,43 +17,48 @@ class Lexer:
 	register = re.compile(r"^r\d$")
 	label = re.compile(r"^\w+:$")
 
+	current_line = 1
+
 	def __init__(self, code: str):
 		self.symbols = []
-		self.str = [s.casefold() for s in code.split()]
+		lines = [s.casefold() for s in code.split("\n")]
+		self.str = [line.split() for line in lines]
 
 		self.lex()
 
 	def lex(self) -> None:
-		for s in self.str:
-			token = s
-			if re.match(self.number, s):
-				token = IMM(int(s))
-			elif re.match(self.hexnumber, s):
-				token = IMM(int(s, 16))
-			elif re.match(self.register, s):
-				token = REGISTER(int(s[1:]))
-			elif re.match(self.label, s):
-				token = LABEL(s)
-			elif s == ".bank":
-				token = BANK()
-			elif s == "/*":
-				token = COMMENT_OPEN()
-			elif s == "*/":
-				token = COMMENT_CLOSE()
-			else:
-				token = OPERATOR(token)
+		for idx, line in enumerate(self.str):
+			for s in line:
+				token = s
+				if re.match(self.number, s):
+					token = IMM(idx+1, int(s))
+				elif re.match(self.hexnumber, s):
+					token = IMM(idx+1, int(s, 16))
+				elif re.match(self.register, s):
+					token = REGISTER(idx+1, int(s[1:]))
+				elif re.match(self.label, s):
+					token = LABEL(idx+1, s)
+				elif s == ".bank":
+					token = BANK(idx+1)
+				elif s == "/*":
+					token = COMMENT_OPEN(idx+1)
+				elif s == "*/":
+					token = COMMENT_CLOSE(idx+1)
+				else:
+					token = OPERATOR(idx+1, token)
 
-			self.symbols.append(token)
+				self.symbols.append(token)
 
 	T = TypeVar("T")
 	def pop(self, t : Type[T]) -> T:
 		res = self.symbols.pop(0) if len(self.symbols) else None
 
 		if res is not None:
+			self.current_line = res.line
 			if not isinstance(res, t):
-				raise LexerError(f"Token '{res}' type is incorrect ({type(res)} is not {t})")
+				raise LexerError(res.line, f"Token '{res}' type is incorrect ({type(res)} is not {t})")
 		else:
-			raise LexerError("No more token available")
+			raise LexerError(self.current_line, "No more token available")
 
 		return res
 
@@ -82,7 +87,7 @@ class Parser:
 					case BANK():
 						context = SBANK(self.lexer.pop(IMM))
 					case _:
-						raise ParsingError("Not in a bank or data section")
+						raise ParsingError(token.line, "Not in a bank or data section")
 			else:
 				match token:
 					case BANK():
@@ -115,7 +120,7 @@ class Parser:
 											operation = LOGIC_R
 								context.push(operation(s, reg, op2))
 							case _:
-								raise ParsingError(f"Unknown operator '{s}'")
+								raise ParsingError(token.line, f"Unknown operator '{s}'")
 
 		return page
 
