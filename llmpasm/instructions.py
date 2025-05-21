@@ -31,7 +31,7 @@ class INSTR(ABC):
 		return self.name \
 			+ (f" ({self.x})" if self.x is not None else "") \
 			+ (f", ({self.y})" if self.y is not None else "") \
-			+ f" -> [{binascii.hexlify(self.compile())}]"
+			+ f" -> [{binascii.hexlify(self.compile(), "-", 2)}]"
 
 
 class ARITH(INSTR):
