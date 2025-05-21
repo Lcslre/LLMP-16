@@ -1,3 +1,6 @@
+from errors import *
+
+
 class TOKEN:
 	""" Token base type """
 	name = "Token"
@@ -31,6 +34,8 @@ class IMM(TOKEN):
 	name = "Imm"
 	
 	def __init__(self, imm: int) -> None:
+		if imm > 0xFFFF:
+			raise TokenError(f"Immediate {imm} (0x{imm:x}) is larger than 16 bits")
 		self.i = imm
 
 

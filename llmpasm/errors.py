@@ -13,3 +13,7 @@ class SectionError(LlmpAsmError):
 
 class ParsingError(LlmpAsmError):
 	pass
+
+
+class TokenError(LlmpAsmError):
+	pass

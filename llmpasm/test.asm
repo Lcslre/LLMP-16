@@ -10,5 +10,5 @@ SUB R3 R4
  */
 
 sub r2 3
-and r4 6
+and r4 0x12345
 not r7
