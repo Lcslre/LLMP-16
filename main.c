@@ -15,14 +15,8 @@ void llmp16_init(llmp16_t *vm)
     vm->FLAGS = 0;
     vm->halted = false;
 
-    vm->ROM = (uint8_t **)malloc(LLMP_ROM_BANKS * sizeof(uint8_t *));
-    for (int i = 0; i < LLMP_ROM_BANKS; i++) {
-        vm->ROM[i] = (uint8_t *)malloc(LLMP_ROM_BANK_SIZE);
-    }
-    vm->RAM = (uint8_t **)malloc(LLMP_RAM_BANKS * sizeof(uint8_t *));
-    for (int i = 0; i < LLMP_RAM_BANKS; i++) {
-        vm->RAM[i] = (uint8_t *)malloc(LLMP_RAM_BANK_SIZE);
-    }
+    vm->memory = (uint8_t *)malloc(LLMP_MEM_BANKS * LLMP_MEM_BANK_SIZE * sizeof(uint8_t *));
+
     vm->VRAM = (uint8_t **)malloc(LLMP_VRAM_BANKS * sizeof(uint8_t *));
     for (int i = 0; i < LLMP_VRAM_BANKS; i++) {
         vm->VRAM[i] = (uint8_t *)malloc(LLMP_VRAM_BANK_SIZE);

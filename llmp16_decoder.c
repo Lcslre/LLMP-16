@@ -264,10 +264,12 @@ void execute(llmp16_t *cpu, instr_t in)
             cpu->R[in.X] = cpu->R[in.Y];
             break;
         case 0x1: /* LD RX <- MEM[RY] */
-            cpu->R[in.X] = mem_read16(cpu, cpu->R[in.Y]);
+            uint32_t addr = llmp16_mmu_addr(cpu->mmu, MMU_SEGMENT_DATA, cpu->R[in.Y]);
+            cpu->R[in.X] = mem_read16(cpu, addr);
             break;
         case 0x2: /* STR MEM[RX] <- RY */
-            mem_write16(cpu, cpu->R[in.X], cpu->R[in.Y]);
+            uint32_t addr = llmp16_mmu_addr(cpu->mmu, MMU_SEGMENT_DATA, cpu->R[in.X]);
+            mem_write16(cpu, addr, cpu->R[in.Y]);
             break;
         case 0x3: /* PUSH RX */
             cpu->SP -= 2;
@@ -351,10 +353,6 @@ void execute(llmp16_t *cpu, instr_t in)
         uint8_t reg  = in.t;
         cpu->IO[port][reg] = cpu->R[in.X];
  
-         /* sélection d'une banque : OUT Rx, $0000 */
-        // if (port == 0x00 && reg == 0x00) {
-        //     //cpu->bank = cpu->R[in.X] & 0xFF;
-        // }
 
         /* sélection d'une banque de VRAM: OUT Rx, $0001 */
         if (port == 0x00 && reg == 0x01) {

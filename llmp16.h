@@ -22,10 +22,8 @@
 *| Endian                   | little‑endian (LSB à l’adresse la plus basse)     |
 */
  
-#define LLMP_ROM_BANKS   256
-#define LLMP_ROM_BANK_SIZE 0x4000  /* 16 KiB */
-#define LLMP_RAM_BANKS   256
-#define LLMP_RAM_BANK_SIZE      0x4000  /* 16 KiB */
+#define LLMP_MEM_BANKS   16
+#define LLMP_MEM_BANK_SIZE 0xFFFF  /* 64 KiB */
 #define LLMP_VRAM_BANKS   2
 #define LLMP_VRAM_BANK_SIZE 0x10000  /* 64 KiB */
 #define LLMP_IO_PORTS    16
@@ -40,6 +38,7 @@ enum{
 
 typedef struct llmp16_s llmp16_t;
 
+<<<<<<< Updated upstream
 // =========================== screen =====================================
 
 #define LLMP_SCREEN_HEIGHT 200
@@ -167,6 +166,8 @@ typedef struct
 int llmp16_screen_init(llmp16_screen_t *screen,uint8_t** VRAM);
 int llmp16_screen_off(llmp16_screen_t *screen,uint8_t** VRAM);
 void llmp16_screen_render(llmp16_screen_t screen,uint8_t** VRAM);
+=======
+>>>>>>> Stashed changes
 
 
 /*=========================== KeyBoard =====================================*/
@@ -196,8 +197,6 @@ void llmp16_keyb_init(llmp16_keyboard_t *kb);
 void llmp16_keyboard_scan(llmp16_t *cpu, llmp16_keyboard_t *kb);
 
 
-
-
 /*====================================== TIMER ==========================================*/
 
 /* Les timers fonctionnent tous en mode comparateur uniquement */
@@ -218,35 +217,33 @@ void llmp16_timer_count(llmp16_timer_t *timer, uint8_t clk_counter);
 /*====================================== MMU ==========================================*/
 
 typedef enum {
-  MMU_MAP_ROM,
-  MMU_MAP_RAM
+   MMU_SEGMENT_DATA,
+   MMU_SEGMENT_STACK,
+   MMU_SEGMENT_CODE
 } llmp16_mmu_type_t;
 
 typedef struct {
-  llmp16_mmu_type_t type;
-  uint8_t bank; // bank ID
-} llmp16_mmu_mapping_t;
-
-typedef struct {
-  llmp16_mmu_mapping_t segments[4]; // segment 0: 0x0000-0x3FFF, segment 1: 0x4000-0x7FFF, segment 2: 0x8000-0xBFFF, segment 3: 0xC000-0xFFFF
+  uint8_t data_segment;
+  uint8_t code_segment;
+  uint8_t stack_segment;
 } llmp16_mmu_t;
 
 void llmp16_mmu_init(llmp16_mmu_t *mmu);
+uint32_t llmp16_mmu_addr(llmp16_mmu_t mmu, llmp16_mmu_type_t type, uint16_t offset);
 void llmp16_mmu_update(llmp16_t *cpu);
 
 /*============================== Machine Virtuelle ==============================*/
 
 typedef struct llmp16_s {
    uint16_t R[16];                      /* R0‑R15 (R15 = ACC) */
-   uint16_t PC;                         /* Program Counter    */
-   uint16_t SP;                         /* Stack Pointer      */
+   uint32_t PC;                         /* Program Counter    */
+   uint32_t SP;                         /* Stack Pointer      */
    uint8_t  FLAGS;                      /* NZCV, bits 3..0    */
    uint8_t  vbank;                       /* Current VRAM bank   */
 
    bool halted;
 
-   uint8_t  **ROM; // uint8_t  ROM[LLMP_ROM_BANKS][LLMP_ROM_BANK_SIZE];
-   uint8_t  **RAM; // uint8_t  RAM[LLMP_RAM_BANKS][LLMP_RAM_SIZE];
+   uint8_t  *memory; // uint8_t  RAM[LLMP_RAM_BANKS][LLMP_RAM_SIZE];
    uint8_t  **VRAM; // uint8_t  VRAM[LLMP_VRAM_BANKS][LLMP_VRAM_BANK_SIZE];
 
    uint64_t clk;
@@ -870,11 +867,14 @@ typedef struct llmp16_s {
    llmp16_keyboard_t keyboard;
    llmp16_screen_t screen;
 
+
    llmp16_mmu_t mmu; // memory management unit
 
    llmp16_timer_t timer1;                  /* Timer 1 (16 bits) */
    llmp16_timer_t timer2;                  /* Timer 2 (16 bits) */
    llmp16_timer_t timer3;                  /* Timer 3 (16 bits) */
+
+   
 
  
    uint16_t IO[LLMP_IO_PORTS][LLMP_IO_REGS];  /* 16‑bit regs  */
@@ -884,8 +884,6 @@ typedef struct llmp16_s {
    bool int_pending;
 
 } llmp16_t;
-
-
 
 void llmp16_run(llmp16_t *cpu);
 void llmp16_init(llmp16_t *vm);
@@ -931,52 +929,15 @@ static inline void flag_sub_cv(llmp16_t *cpu, uint16_t a, uint16_t b, uint32_t r
 
 
 // segment 0: 0x0000-0x3FFF, segment 1: 0x4000-0x7FFF, segment 2: 0x8000-0xBFFF, segment 3: 0xC000-0xFFFF
-static inline uint8_t mem_read8(llmp16_t *cpu, uint16_t addr) {
-
-   llmp16_mmu_mapping_t *map;
-
-  if (addr < 0x4000) {
-      map = &cpu->mmu.segments[0]; // 0x0000-0x3FFF
-  } else if (addr < 0x8000) {
-      map = &cpu->mmu.segments[1]; // 0x4000-0x7FFF
-  } else if (addr < 0xC000) {
-      map = &cpu->mmu.segments[2]; // 0x8000-0xBFFF
-  } else {
-      map = &cpu->mmu.segments[3]; // 0xC000-0xFFFF
-  }
-   // On ne garde que les 14 bits de poids faible
-  uint16_t offset = addr & 0x3FFF; // 0x0000-0x3FFF
-
-  switch (map->type) {
-      case MMU_MAP_ROM:  return cpu->ROM[map->bank][offset];
-      case MMU_MAP_RAM:  return cpu->RAM[map->bank][offset];
-      default: return 0xFF;
-  }
+static inline uint8_t mem_read8(llmp16_t *cpu, uint32_t addr) {
+   return cpu->memory[addr];
 }
 
-static inline void mem_write8(llmp16_t *cpu, uint16_t addr, uint8_t v) {
- 
-   llmp16_mmu_mapping_t *map;
-
-  if (addr < 0x4000) {
-      map = &cpu->mmu.segments[0]; // 0x0000-0x3FFF
-  } else if (addr < 0x8000) {
-      map = &cpu->mmu.segments[1]; // 0x4000-0x7FFF
-  } else if (addr < 0xC000) {
-      map = &cpu->mmu.segments[2]; // 0x8000-0xBFFF
-  } else {
-      map = &cpu->mmu.segments[3]; // 0xC000-0xFFFF
-  }
-   // On ne garde que les 14 bits de poids faible
-   uint16_t offset = addr & 0x3FFF; // 0x0000-0x3FFF
-
-   switch (map->type) {
-      case MMU_MAP_RAM: cpu->RAM[map->bank][offset] = v; break;
-      default: break;
-   }
+static inline void mem_write8(llmp16_t *cpu, uint32_t addr, uint8_t v) {
+  return cpu->memory[addr];
 }
  
-static inline uint16_t mem_read16(llmp16_t *cpu, uint16_t addr)
+static inline uint16_t mem_read16(llmp16_t *cpu, uint32_t addr)
 {
    /* little‑endian: LSB first */
    uint8_t lo = mem_read8(cpu, addr);
@@ -984,7 +945,7 @@ static inline uint16_t mem_read16(llmp16_t *cpu, uint16_t addr)
    return (uint16_t)(lo | (hi << 8));
 }
  
-static inline void mem_write16(llmp16_t *cpu, uint16_t addr, uint16_t v)
+static inline void mem_write16(llmp16_t *cpu, uint32_t addr, uint16_t v)
 {
    mem_write8(cpu, addr,     (uint8_t)(v & 0xFF));
    mem_write8(cpu, addr + 1, (uint8_t)(v >> 8));
@@ -1010,9 +971,8 @@ static inline void llmp16_reset(llmp16_t *cpu)
    cpu->halted = false;
    memset(cpu->R, 0, sizeof(cpu->R));
    memset(cpu->IO, 0, sizeof(cpu->IO));
-   memset(cpu->RAM, 0, sizeof(cpu->RAM));
+   memset(cpu->memory, 0, sizeof(cpu->memory));
    memset(cpu->VRAM, 0, sizeof(cpu->VRAM));
-   memset(cpu->ROM, 0, sizeof(cpu->ROM));
 }
 
  /*============== Routines de fetch/decode/execute ==============*/
@@ -1045,7 +1005,7 @@ void llmp16_cpu_cycle(llmp16_t *cpu);
 typedef struct {
   uint16_t code;
   uint8_t nb_pages;
-  uint16_t taille_page[LLMP_ROM_BANKS];
+  uint16_t taille_page[LLMP_MEM_BANKS];
 }llmp16_header_rom_file_t;
 
 /* chaque fichier binaire entré dans la ROM devra avoir le code FILE_CODE pour etre traité, 
