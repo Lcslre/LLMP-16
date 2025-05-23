@@ -10,12 +10,13 @@
 void llmp16_init(llmp16_t *vm)
 {
     vm->vbank = 0;
-    vm->PC = 0;
-    vm->SP = 0xFFFF; // Initialisation de la pile
+    vm->SPR[PC] = 0;
+    vm->SPR[SP] = 0xFFFFFF;
+
     vm->FLAGS = 0;
     vm->halted = false;
 
-    vm->memory = (uint8_t *)malloc(LLMP_MEM_BANKS * LLMP_MEM_BANK_SIZE * sizeof(uint8_t *));
+    vm->memory = (uint8_t *)malloc(LLMP_MEM_SIZE * sizeof(uint8_t *));
 
     vm->VRAM = (uint8_t **)malloc(LLMP_VRAM_BANKS * sizeof(uint8_t *));
     for (int i = 0; i < LLMP_VRAM_BANKS; i++) {
@@ -24,14 +25,11 @@ void llmp16_init(llmp16_t *vm)
     
     llmp16_keyb_init(&vm->keyboard);
     
-    llmp16_mmu_init(&vm->mmu);
-
     llmp16_timer_init(&vm->timer1, 0, 0, 0);
     llmp16_timer_init(&vm->timer2, 0, 0, 0);
     llmp16_timer_init(&vm->timer3, 0, 0, 0);
     llmp16_screen_init(&vm->screen,vm->VRAM);
 
-    
     vm->clk = 0;
     
     for (int i = 0; i < LLMP_IO_PORTS; i++) {
