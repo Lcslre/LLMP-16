@@ -13,17 +13,17 @@
 *|--------------------------|---------------------------------------------------|
 *| Horloge CPU              | 5 MHz                                             |
 *| Largeur bus données      | 16 bits                                           |
-*| Largeur bus adresses     | 24 bits adressés par octet (0–65 535)             |
-*| Registres généraux       | R0–R15 (R15 = ACC), PC, SP, FLAGS                 |
-*| RAM                      | 256 banques × 16 Ko (total = 4 Mio)               |                       |
+*| Largeur bus adresses     | 20 bits adressés par octet                        |
+*| Registres généraux       | R0–R9  (R15 = ACC), PC, SP, FLAGS                 |
+*| RAM                      | 1 Mo                                              |
 *| VRAM                     | 128 Ko (320 * 200 * 8bpp) x 2                     |
 *| Ports E/S                | 16 ports * 16 registres                           |
 *| Endian                   | little‑endian (LSB à l’adresse la plus basse)     |
 */
  
-#define LLMP_MEM_SIZE 0xFFFFFF  /* 16 MB */
+#define LLMP_MEM_SIZE 0xFFFFFF  /* 1 Mo */
 #define LLMP_VRAM_BANKS   2
-#define LLMP_VRAM_BANK_SIZE 0x10000  /* 64 KiB */
+#define LLMP_VRAM_BANK_SIZE 0x10000  /* 64 Ko */
 #define LLMP_IO_PORTS    16
 #define LLMP_IO_REGS     16
 
