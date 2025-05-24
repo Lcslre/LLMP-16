@@ -15,14 +15,14 @@ instr_t decode(llmp16_t *cpu, uint16_t instr)
     d.addr = 0;
  
     /* 0x2 (arith imm), 0x4 (logic imm)*/                                           
-    if (d.op_class == 0x2 || d.op_class == 0x4 || (d.op_class == 0xA && (d.t == 0 || d.t == 3 || d.t == 5 || d.t == 6)))
+    if (d.op_class == 0x2 || d.op_class == 0x4 || (d.op_class == 0x6 && (d.t == 0 || d.t == 3 || d.t == 5 || d.t == 6)))
     {
         d.has_imm = true;
         d.imm     = fetch(cpu);
     }
 
-    /* 0xA (memory imm), 0x7 (jumps imm16) */
-    if(d.op_class == 0x7 || d.op_class == 0xA || (d.op_class == 0xA && (d.t == 1 || d.t == 2)))
+    /* 0x6 (memory imm), 0x8 (jumps imm16) */
+    if(d.op_class == 0x8 || (d.op_class == 0x6 && (d.t == 1 || d.t == 2)))
     {
         d.has_addr = true;
         d.addr = ((d.raw & 0x00F0) << 12) + fetch(cpu); 
@@ -91,16 +91,22 @@ void execute(llmp16_t *cpu, instr_t in)
             flag_nz(cpu, res);
             break;
         }
-        case 0x5: { /* DEC */
+        case 0x4: { /* SDIV – signed division (optional) */
+            break; // TODO
+        }
+        case 0x5: { /* INC */
+            uint16_t res = cpu->GPR[in.X] + 1;
+            cpu->GPR[in.X] = res;
+            flag_nz(cpu, res);
+            break;
+        }
+        case 0x6: { /* DEC */
             uint16_t res = cpu->GPR[in.X] - 1;
             cpu->GPR[in.X] = res;
             flag_nz(cpu, res);
             break;
         }
-        case 0x4: { /* SDIV – signed division (optional) */
-            break; // TODO
-        }
-        case 0x6: { /* CMP */
+        case 0x7: { /* CMP */
             uint16_t a = cpu->GPR[in.X];
             uint16_t b = cpu->GPR[in.Y];
             uint32_t r32 = (uint32_t)a - b + 0x10000;
@@ -304,10 +310,14 @@ void execute(llmp16_t *cpu, instr_t in)
             case 0x2: take = !flag_get(cpu, FLAG_Z); break;    /* JNE   */
             case 0x3: take = flag_get(cpu, FLAG_C); break;     /* JCS   */
             case 0x4: take = !flag_get(cpu, FLAG_C); break;    /* JCC   */
-            case 0x5: take = flag_get(cpu, FLAG_N); break;     /* JNS   */
-            case 0x6: take = !flag_get(cpu, FLAG_N); break;    /* JNC   */
-            case 0x7: take = flag_get(cpu, FLAG_V); break;     /* JVS   */
-            case 0x8: take = !flag_get(cpu, FLAG_V); break;    /* JVC   */
+            case 0x5: take = flag_get(cpu, FLAG_V); break;     /* JVS   */
+            case 0x6: take = !flag_get(cpu, FLAG_V); break;    /* JVC   */
+            case 0x7: take = ((flag_get(cpu, FLAG_N) == flag_get(cpu, FLAG_V)) && !flag_get(cpu, FLAG_Z)); break; /*JGT*/
+            case 0x8: take = (flag_get(cpu, FLAG_N) != flag_get(cpu, FLAG_V)); break; /*JLT*/
+            case 0x9: take = (flag_get(cpu, FLAG_N) == flag_get(cpu, FLAG_V)); break; /*JGE*/
+            case 0xA: take = ((flag_get(cpu, FLAG_N) != flag_get(cpu, FLAG_V)) && flag_get(cpu, FLAG_Z)); break; /*JLE*/
+            case 0xB: take = (!flag_get(cpu, FLAG_C) && !flag_get(cpu, FLAG_Z)); break; /*JHI*/
+            case 0xC: take = (flag_get(cpu, FLAG_C) && flag_get(cpu, FLAG_Z)); break; /*JLS*/
             default:
                 break;
         }
@@ -320,22 +330,26 @@ void execute(llmp16_t *cpu, instr_t in)
          bool take = false;
          switch (in.t)
          {
-         case 0x0: take = true; break;                     /* JUMP imm */
-         case 0x1: take = flag_get(cpu, FLAG_Z); break;    /* JEQ      */
-         case 0x2: take = !flag_get(cpu, FLAG_Z); break;   /* JNE      */
-         case 0x3: take = flag_get(cpu, FLAG_C); break;    /* JCS      */
-         case 0x4: take = !flag_get(cpu, FLAG_C); break;   /* JCC      */
-         case 0x5: take = flag_get(cpu, FLAG_N); break;    /* JNS      */
-         case 0x6: take = !flag_get(cpu, FLAG_N); break;   /* JNC      */
-         case 0x7: take = flag_get(cpu, FLAG_V); break;    /* JVS      */
-         case 0x8: take = !flag_get(cpu, FLAG_V); break;   /* JVC      */
-         case 0x9: /* CALL */
-            cpu->SPR[SP] -= 2;
-            mem_write16(cpu, cpu->SPR[SP], cpu->SPR[PC]);
-            cpu->SPR[PC] = in.addr;
-            break;
-         default:
-            break;
+            case 0x0: take = true; break;                     /* JUMP  */
+            case 0x1: take = flag_get(cpu, FLAG_Z); break;     /* JEQ   */
+            case 0x2: take = !flag_get(cpu, FLAG_Z); break;    /* JNE   */
+            case 0x3: take = flag_get(cpu, FLAG_C); break;     /* JCS   */
+            case 0x4: take = !flag_get(cpu, FLAG_C); break;    /* JCC   */
+            case 0x5: take = flag_get(cpu, FLAG_V); break;     /* JVS   */
+            case 0x6: take = !flag_get(cpu, FLAG_V); break;    /* JVC   */
+            case 0x7: take = ((flag_get(cpu, FLAG_N) == flag_get(cpu, FLAG_V)) && !flag_get(cpu, FLAG_Z)); break; /*JGT*/
+            case 0x8: take = (flag_get(cpu, FLAG_N) != flag_get(cpu, FLAG_V)); break; /*JLT*/
+            case 0x9: take = (flag_get(cpu, FLAG_N) == flag_get(cpu, FLAG_V)); break; /*JGE*/
+            case 0xA: take = ((flag_get(cpu, FLAG_N) != flag_get(cpu, FLAG_V)) && flag_get(cpu, FLAG_Z)); break; /*JLE*/
+            case 0xB: take = (!flag_get(cpu, FLAG_C) && !flag_get(cpu, FLAG_Z)); break; /*JHI*/
+            case 0xC: take = (flag_get(cpu, FLAG_C) && flag_get(cpu, FLAG_Z)); break; /*JLS*/
+            case 0xD: /* CALL */
+                cpu->SPR[SP] -= 2;
+                mem_write16(cpu, cpu->SPR[SP], cpu->SPR[PC]);
+                cpu->SPR[PC] = in.addr;
+                break;
+            default:
+                break;
         }
         if (take) cpu->SPR[PC] = in.addr;
         break;
