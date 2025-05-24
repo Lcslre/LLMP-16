@@ -21,7 +21,7 @@
 *| Endian                   | little‑endian (LSB à l’adresse la plus basse)     |
 */
  
-#define LLMP_MEM_SIZE 0xFFFFFF  /* 1 Mo */
+#define LLMP_MEM_SIZE 0xFFFFF  /* 1 Mo */
 #define LLMP_VRAM_BANKS   2
 #define LLMP_VRAM_BANK_SIZE 0x10000  /* 64 Ko */
 #define LLMP_IO_PORTS    16
