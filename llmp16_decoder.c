@@ -58,7 +58,7 @@ void execute(llmp16_t *cpu, instr_t in)
             uint16_t b = cpu->GPR[in.Y];
             uint32_t r32 = (uint32_t)a + b;
             uint16_t r16 = (uint16_t)r32;
-            cpu->GPR[15] = r16;
+            cpu->SPR[R_ACC] = r16;
             flag_nz(cpu, r16);
             flag_add_cv(cpu, a, b, r32);
             break;
@@ -68,7 +68,7 @@ void execute(llmp16_t *cpu, instr_t in)
             uint16_t b = cpu->GPR[in.Y];
             uint32_t r32 = (uint32_t)a - b + 0x10000;
             uint16_t r16 = (uint16_t)r32;
-            cpu->GPR[15] = r16;
+            cpu->SPR[R_ACC] = r16;
             flag_nz(cpu, r16);
             flag_sub_cv(cpu, a, b, r32);
             break;
@@ -76,7 +76,7 @@ void execute(llmp16_t *cpu, instr_t in)
         case 0x2: { /* MUL */
             uint32_t r32 = (uint32_t)cpu->GPR[in.X] * cpu->GPR[in.Y];
             uint16_t r16 = (uint16_t)r32;
-            cpu->GPR[15] = r16;
+            cpu->SPR[R_ACC] = r16;
             flag_nz(cpu, r16);
             flag_set(cpu, FLAG_C | FLAG_V, false);
             break;
@@ -87,7 +87,7 @@ void execute(llmp16_t *cpu, instr_t in)
                 break;
             }
             uint16_t res = cpu->GPR[in.X] / denom;
-            cpu->GPR[15] = res;
+            cpu->SPR[R_ACC] = res;
             flag_nz(cpu, res);
             break;
         }
@@ -156,7 +156,7 @@ void execute(llmp16_t *cpu, instr_t in)
             uint16_t b = in.imm;
             uint32_t r32 = (uint32_t)a + b;
             uint16_t r16 = (uint16_t)r32;
-            cpu->GPR[15] = r16;
+            cpu->SPR[R_ACC] = r16;
             flag_nz(cpu, r16);
             flag_add_cv(cpu, a, b, r32);
             break;
@@ -166,7 +166,7 @@ void execute(llmp16_t *cpu, instr_t in)
             uint16_t b = in.imm;
             uint32_t r32 = (uint32_t)a - b + 0x10000;
             uint16_t r16 = (uint16_t)r32;
-            cpu->GPR[15] = r16;
+            cpu->SPR[R_ACC] = r16;
             flag_nz(cpu, r16);
             flag_sub_cv(cpu, a, b, r32);
             break;
@@ -174,14 +174,14 @@ void execute(llmp16_t *cpu, instr_t in)
         case 0x2: { /* MULI */
             uint32_t r32 = (uint32_t)cpu->GPR[in.X] * in.imm;
             uint16_t r16 = (uint16_t)r32;
-            cpu->GPR[15] = r16;
+            cpu->SPR[R_ACC] = r16;
             flag_nz(cpu, r16);
             break;
         }
         case 0x3: { /* DIVI */
             if (in.imm == 0) break;
             uint16_t res = cpu->GPR[in.X] / in.imm;
-            cpu->GPR[15] = res;
+            cpu->SPR[R_ACC] = res;
             flag_nz(cpu, res);
             break;
         }
@@ -204,19 +204,19 @@ void execute(llmp16_t *cpu, instr_t in)
         {
         case 0x0: { /* AND */
             uint16_t res = cpu->GPR[in.X] & cpu->GPR[in.Y];
-            cpu->GPR[15] = res;
+            cpu->SPR[R_ACC] = res;
             flag_nz(cpu, res);
             break;
         }
         case 0x1: { /* OR */
             uint16_t res = cpu->GPR[in.X] | cpu->GPR[in.Y];
-            cpu->GPR[15] = res;
+            cpu->SPR[R_ACC] = res;
             flag_nz(cpu, res);
             break;
         }
         case 0x2: { /* XOR */
             uint16_t res = cpu->GPR[in.X] ^ cpu->GPR[in.Y];
-            cpu->GPR[15] = res;
+            cpu->SPR[R_ACC] = res;
             flag_nz(cpu, res);
             break;
         }
@@ -242,19 +242,19 @@ void execute(llmp16_t *cpu, instr_t in)
          {
          case 0x0: { /* ANDI */
             uint16_t res = cpu->GPR[in.X] & in.imm;
-            cpu->GPR[15] = res;
+            cpu->SPR[R_ACC] = res;
             flag_nz(cpu, res);
             break;
          }
          case 0x1: { /* ORI */
             uint16_t res = cpu->GPR[in.X] | in.imm;
-            cpu->GPR[15] = res;
+            cpu->SPR[R_ACC] = res;
             flag_nz(cpu, res);
             break;
          }
          case 0x2: { /* XORI */
             uint16_t res = cpu->GPR[in.X] ^ in.imm;
-            cpu->GPR[15] = res;
+            cpu->SPR[R_ACC] = res;
             flag_nz(cpu, res);
             break;
          }

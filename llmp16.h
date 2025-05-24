@@ -53,9 +53,9 @@ typedef struct
  
 }llmp16_screen_t;
 
-int llmp16_screen_init(llmp16_screen_t *screen,uint8_t** VRAM);
-int llmp16_screen_off(llmp16_screen_t *screen,uint8_t** VRAM);
-void llmp16_screen_render(llmp16_screen_t screen,uint8_t** VRAM);
+int llmp16_screen_init(llmp16_screen_t *screen);
+void llmp16_screen_off(llmp16_screen_t *screen);
+void llmp16_screen_render(llmp16_screen_t screen, uint8_t** VRAM);
 
 
 /*=========================== KeyBoard =====================================*/
@@ -82,7 +82,7 @@ void llmp16_keyb_init(llmp16_keyboard_t *kb);
 
 /* La fonction llmp16_keyboard_scan() est appelée à chaque itération de la boucle principale de la machine virtuelle.
    Elle permet de scanner l'état du clavier et d'ajouter les touches pressées à la file d'attente. */
-void llmp16_keyboard_scan(llmp16_t *cpu, llmp16_keyboard_t *kb);
+void llmp16_keyboard_scan(llmp16_t *cpu);
 
 
 
@@ -109,6 +109,16 @@ void llmp16_timer_count(llmp16_timer_t *timer, uint8_t clk_counter);
 #define PC 0
 #define SP 1
 
+enum {
+  R_ACC = 0,
+  R_IDXH,
+  R_IDXL,
+  R_IDX,
+  R_SP,
+  R_PC
+};
+
+
 typedef struct llmp16_s {
    uint16_t GPR[10];                      /* R0‑R8 sont des registres généraux */
    uint32_t SPR[6];                      /*R9-R15 sont des registres spéciaux (Acc, Index_high, Index_low, Index, SP, PC)*/
@@ -118,7 +128,7 @@ typedef struct llmp16_s {
 
    bool halted;
 
-   uint8_t  **memory;
+   uint8_t  *memory;
    uint8_t  **VRAM; // uint8_t  VRAM[LLMP_VRAM_BANKS][LLMP_VRAM_BANK_SIZE];
 
    uint64_t clk;
@@ -231,8 +241,9 @@ static inline void llmp16_reset(llmp16_t *cpu)
    cpu->SPR[PC] = 0;
    cpu->SPR[SP] = 0xFFFFFF; // Initialisation de la pile
    memset(cpu->IO, 0, sizeof(cpu->IO));
-   memset(cpu->memory, 0, sizeof(cpu->memory));
-   memset(cpu->VRAM, 0, sizeof(cpu->VRAM));
+   memset(cpu->memory, 0, LLMP_MEM_SIZE);
+   for (int i = 0; i < LLMP_VRAM_BANKS; ++i)
+    memset(cpu->VRAM[i], 0, LLMP_VRAM_BANK_SIZE);
 }
 
  /*============== Routines de fetch/decode/execute ==============*/

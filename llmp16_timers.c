@@ -12,13 +12,13 @@ void llmp16_timer_init(llmp16_timer_t *timer, uint8_t PSC, uint16_t value, uint1
 void llmp16_timer_count(llmp16_timer_t *timer, uint8_t clk_counter)
 {
     if(clk_counter % timer->PSC == 0) timer->count++;
-    if((timer->status & 0x06) == 0 && timer->count >= timer->value)
+    if((timer->status & 0x01) == 0 && timer->count >= timer->value)
     {
         timer->count = timer->init_value;
         return; // TODO : activer une intérruption
     }
 
-    if((timer->status & 0x06) == 1 && timer->count <= timer->value)
+    if((timer->status & 0x01) == 1 && timer->count <= timer->value)
     {
         timer->count = timer->init_value;
         return; // TODO : activer une intérruption

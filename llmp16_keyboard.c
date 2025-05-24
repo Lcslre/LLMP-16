@@ -15,7 +15,7 @@ void llmp16_keyb_init(llmp16_keyboard_t *kb)
 
 // La fonction llmp16_keyboard_scan() lit les événements SDL et ajoute les touches pressées à la file d'attente du clavier.
 // Elle est appelée à chaque itération de la boucle principale de la machine virtuelle.
-void llmp16_keyboard_scan(llmp16_t *cpu, llmp16_keyboard_t *kb)
+void llmp16_keyboard_scan(llmp16_t *cpu)
 {
     SDL_Event event;
     if (SDL_PollEvent(&event)) {

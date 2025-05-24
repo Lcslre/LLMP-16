@@ -5,7 +5,7 @@
 #include "llmp16.h"
 
 
-int llmp16_screen_init(llmp16_screen_t *screen,uint8_t** VRAM)
+int llmp16_screen_init(llmp16_screen_t *screen)
 {
     if(0 != SDL_Init(SDL_INIT_VIDEO))
     {
@@ -38,7 +38,7 @@ int llmp16_screen_init(llmp16_screen_t *screen,uint8_t** VRAM)
     if(screen->framebuffer == NULL)
     {
         fprintf(stderr, "Erreur SDL_CreateTexture : %s", SDL_GetError());
-        llmp16_screen_off(screen,VRAM);
+        llmp16_screen_off(screen);
         return EXIT_FAILURE;
     }
 
@@ -46,7 +46,7 @@ int llmp16_screen_init(llmp16_screen_t *screen,uint8_t** VRAM)
 }
 
 
-int llmp16_screen_off(llmp16_screen_t *screen,uint8_t** VRAM)
+void llmp16_screen_off(llmp16_screen_t *screen)
 {
     if(screen->framebuffer != NULL) SDL_DestroyTexture(screen->framebuffer);
     if(screen->renderer != NULL) SDL_DestroyRenderer(screen->renderer);

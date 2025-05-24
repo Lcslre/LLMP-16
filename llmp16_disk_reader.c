@@ -5,9 +5,6 @@
 #include <string.h>
 
 
-
-
-
 uint16_t CHS_to_offset(uint16_t CHS) {
     uint8_t H = (CHS >> 15) & 0x01;
     uint8_t C = (CHS >> 8) & 0x7F;
@@ -24,8 +21,8 @@ uint16_t CHS_to_offset(uint16_t CHS) {
 
 void llmp16_disk_read_segment(FILE *disk, uint16_t CHS, uint8_t *mem) {
     fseek(disk, CHS_to_offset(CHS), SEEK_SET);
-    fread(mem, 512, 1 , disk);
-}
+    if (fread(mem, 512, 1 , disk) != 1) perror("Disk read error");
+}   
 
 void llmp16_disk_write_segment(FILE *disk, uint16_t CHS, uint8_t *mem) {
     fseek(disk, CHS_to_offset(CHS), SEEK_SET);
