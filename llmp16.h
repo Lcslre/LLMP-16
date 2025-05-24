@@ -242,8 +242,10 @@ typedef struct {
    uint8_t  X;          
    uint8_t  Y;          
    uint8_t  t;          
-   bool     has_imm;    
-   uint32_t imm;        
+   bool     has_imm;
+   bool has_addr;    
+   uint16_t imm; 
+   uint32_t addr;       
    uint16_t raw;        
 } instr_t;
  

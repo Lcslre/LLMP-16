@@ -10,18 +10,24 @@ instr_t decode(llmp16_t *cpu, uint16_t instr)
     d.Y        = (d.raw >>  4) & 0x0F;
     d.t        =  d.raw        & 0x0F;
     d.has_imm  = false;
+    d.has_addr = false;
     d.imm      = 0;
+    d.addr = 0;
  
-    /* 0x2 (arith imm),
-    * 0x4 (logic imm), 0xA (memory imm),
-    * 0x7 (jumps imm16)                                           */
-    if (d.op_class == 0x2 || d.op_class == 0x4 ||
-        d.op_class == 0x7 || d.op_class == 0xA)
+    /* 0x2 (arith imm), 0x4 (logic imm)*/                                           
+    if (d.op_class == 0x2 || d.op_class == 0x4 || (d.op_class == 0xA && (d.t == 0 || d.t == 3 || d.t == 5 || d.t == 6)))
     {
         d.has_imm = true;
         d.imm     = fetch(cpu);
     }
- 
+
+    /* 0xA (memory imm), 0x7 (jumps imm16) */
+    if(d.op_class == 0x7 || d.op_class == 0xA || (d.op_class == 0xA && (d.t == 1 || d.t == 2)))
+    {
+        d.has_addr = true;
+        d.addr = ((d.raw & 0x00F0) << 12) + fetch(cpu); 
+    }
+
     return d;
 }
  
@@ -326,12 +332,12 @@ void execute(llmp16_t *cpu, instr_t in)
          case 0x9: /* CALL */
             cpu->SPR[SP] -= 2;
             mem_write16(cpu, cpu->SPR[SP], cpu->SPR[PC]);
-            cpu->SPR[PC] = in.imm;
+            cpu->SPR[PC] = in.addr;
             break;
          default:
             break;
         }
-        if (take) cpu->SPR[PC] = in.imm;
+        if (take) cpu->SPR[PC] = in.addr;
         break;
      }
  
@@ -366,10 +372,10 @@ void execute(llmp16_t *cpu, instr_t in)
             cpu->GPR[in.X] = in.imm;
             break;
         case 0x1: /* LDI */
-            cpu->GPR[in.X] = mem_read16(cpu, in.imm);
+            cpu->GPR[in.X] = mem_read16(cpu, in.addr);
             break;
         case 0x2: /* STRI MEM[imm] <- RX */
-            mem_write16(cpu, in.imm, cpu->GPR[in.X]);
+            mem_write16(cpu, in.addr, cpu->GPR[in.X]);
             break;
         case 0x3: /* VLOAD */
             cpu->GPR[in.X] = vram_read(cpu, in.imm);

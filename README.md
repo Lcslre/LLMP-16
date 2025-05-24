@@ -8,12 +8,11 @@ Pour accéder aux registres de configurations il faut utiliser les instructions 
 
 | Ports | Périphériques | registre 0 | registre 1 | registre 2 | registre 3 |
 | :---: | :---: | :---: | :---: | :---: | :---: |
-| $0 | MMU | Type de mémoire du segment 1 ($0000 - $7FFF) | choix de la banque | type de mémoire du segment 2 ($8000 - $FFFF) | choix de la banque |
-| $1 |     Ecran     | choix de ROM | choix de la VRAM | - |
-| $2 |    clavier    | code de la touche pressée | registre de status | - | - |
-| $3 |    Timer 1    | PSC |           INIT VALUE           | status | - |
-| $4 |    Timer 2    | TODO |           TODO           | - | - |
-| $5 |    Timer 3    | TODO |           TODO           | - | - |
+| $0 |     Ecran     | choix de ROM | choix de la VRAM | - |
+| $1 |    clavier    | code de la touche pressée | registre de status | - | - |
+| $2 |    Timer 1    | PSC |           INIT VALUE           | status | - |
+| $3 |    Timer 2    | TODO |           TODO           | - | - |
+| $4 |    Timer 3    | TODO |           TODO           | - | - |
 
 ## Le jeu d’instructions
 
@@ -77,11 +76,11 @@ Pour accéder aux registres de configurations il faut utiliser les instructions 
 | opcode | description | taille (mots) | format | flags |
 | :---: | :---: | :---: | :---: | :---: |
 | MOVI X imm16 | RX \<- imm16 | 2 | 0x6X00 0xnnnn | \- |
-| LDI X imm16 | RX \<- MEM\[imm16\] | 2 | 0x6X01 0xnnnn | \- |
-| STRI X imm16 | MEM\[imm16\] \<- RX | 2 | 0x6X02 0xnnnn | \- |
+| LDI X imm16 | RX \<- MEM\[imm16\] | 2 | 0x6Xn1 0xnnnn | \- |
+| STRI X imm16 | MEM\[imm16\] \<- RX | 2 | 0x6Xn2 0xnnnn | \- |
 | PUSHI imm16 | MEM\[--SP\] \<- imm16  | 2 | 0x6003 0xnnnn | \- |
-| VLDI X imm16 |  RX \<- VRAM\[imm16\] | 2 | 0x6X05 0xnnnn | \- |
-| VSTRI X imm16 | VRAM\[imm16\] \<- RX | 2 | 0x6X06 0xnnnn | \- |
+| VLDI X imm8 |  RX \<- VRAM\[imm16\] | 2 | 0x6X05 0x00nn | \- |
+| VSTRI X imm8 | VRAM\[imm16\] \<- RX | 2 | 0x6X06 0x00nn | \- |
 
 ### Les instructions de sauts
 
@@ -101,15 +100,15 @@ Pour accéder aux registres de configurations il faut utiliser les instructions 
 | opcode | description | taille (mots) | format | flags |
 | :---: | :---: | :---: | :---: | :---: |
 | JUMPI imm16 | PC ←imm | 2 | 0x8000 0xnnnn | \- |
-| JEQI imm16 | Si Z \= 1 PC ←imm | 2 | 0x8001 0xnnnn | \- |
-| JNEI imm16 | Si Z \= 0 PC ←imm | 2 | 0x8002 0xnnnn | \- |
-| JCSI imm16 | Si C \= 1 PC ←imm | 2 | 0x8003 0xnnnn | \- |
-| JCCI imm16 | Si C \= 0 PC ←imm | 2 | 0x8004 0xnnnn | \- |
-| JNSI imm16 | Si N \= 1 PC ←imm | 2 | 0x8005 0xnnnn | \- |
-| JNCI imm16 | Si N \= 0 PC ←imm | 2 | 0x8006 0xnnnn | \- |
-| JVSI imm16 | Si V \= 1 PC ←imm | 2 | 0x8007 0xnnnn | \- |
-| JVCI imm16 | Si V \= 0 PC ←imm | 2 | 0x8008 0xnnnn | \- |
-| CALL imm16 | PC ←imm PUSH PC | 2 | 0x8009 0xnnnn | \- |
+| JEQI imm16 | Si Z \= 1 PC ←imm | 2 | 0x80n1 0xnnnn | \- |
+| JNEI imm16 | Si Z \= 0 PC ←imm | 2 | 0x80n2 0xnnnn | \- |
+| JCSI imm16 | Si C \= 1 PC ←imm | 2 | 0x80n3 0xnnnn | \- |
+| JCCI imm16 | Si C \= 0 PC ←imm | 2 | 0x80n4 0xnnnn | \- |
+| JNSI imm16 | Si N \= 1 PC ←imm | 2 | 0x80n5 0xnnnn | \- |
+| JNCI imm16 | Si N \= 0 PC ←imm | 2 | 0x80n6 0xnnnn | \- |
+| JVSI imm16 | Si V \= 1 PC ←imm | 2 | 0x80n7 0xnnnn | \- |
+| JVCI imm16 | Si V \= 0 PC ←imm | 2 | 0x80n8 0xnnnn | \- |
+| CALL imm16 | PC ←imm PUSH PC | 2 | 0x80n9 0xnnnn | \- |
 
 ### Les instructions spéciales
 
