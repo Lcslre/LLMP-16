@@ -299,9 +299,32 @@ void execute(llmp16_t *cpu, instr_t in)
             break;
         }
         break;
+    
+    case 0x6:
+        switch (in.t)
+         {
+        case 0x0: /* MOVI */
+            cpu->GPR[in.X] = in.imm;
+            break;
+        case 0x1: /* LDI */
+            cpu->GPR[in.X] = mem_read16(cpu, in.addr);
+            break;
+        case 0x2: /* STRI MEM[imm] <- RX */
+            mem_write16(cpu, in.addr, cpu->GPR[in.X]);
+            break;
+        case 0x3: /* VLOAD */
+            cpu->GPR[in.X] = vram_read(cpu, in.imm);
+            break;
+        case 0x4: /* VSTORE */
+            vram_write(cpu, in.imm, cpu->GPR[in.X] & 0xFF);
+            break;
+        default:
+            break;
+        } 
+        break;
  
-     /* ========= 0x6 – jumps === */
-     case 0x6: {
+     /* ========= 0x7 – jumps === */
+     case 0x7: {
         bool take = false;
         switch (in.t)
         {
@@ -325,8 +348,8 @@ void execute(llmp16_t *cpu, instr_t in)
         break;
      }
  
-     /* ========= 0x7 – Jump / call with immediate ========== */
-     case 0x7: {
+     /* ========= 0x8 – Jump / call with immediate ========== */
+     case 0x8: {
          bool take = false;
          switch (in.t)
          {
@@ -356,7 +379,7 @@ void execute(llmp16_t *cpu, instr_t in)
      }
  
      /* ========= 0x8 – IN RX, port(Y, t) ================== */
-     case 0x8: {
+     case 0x9: {
         uint8_t port = in.Y;
         uint8_t reg  = in.t;
         cpu->GPR[in.X] = cpu->IO[port][reg];
@@ -366,7 +389,7 @@ void execute(llmp16_t *cpu, instr_t in)
      }
  
      /* ========= 0x9 – OUT RX -> port(Y,t) ================ */
-     case 0x9: {
+     case 0xA: {
         uint8_t port = in.Y;
         uint8_t reg  = in.t;
         cpu->IO[port][reg] = cpu->GPR[in.X];
@@ -378,30 +401,6 @@ void execute(llmp16_t *cpu, instr_t in)
         }
         break;
     }
-
-     case 0xA:
-        switch (in.t)
-         {
-        case 0x0: /* MOVI */
-            cpu->GPR[in.X] = in.imm;
-            break;
-        case 0x1: /* LDI */
-            cpu->GPR[in.X] = mem_read16(cpu, in.addr);
-            break;
-        case 0x2: /* STRI MEM[imm] <- RX */
-            mem_write16(cpu, in.addr, cpu->GPR[in.X]);
-            break;
-        case 0x3: /* VLOAD */
-            cpu->GPR[in.X] = vram_read(cpu, in.imm);
-            break;
-        case 0x4: /* VSTORE */
-            vram_write(cpu, in.imm, cpu->GPR[in.X] & 0xFF);
-            break;
-        default:
-            break;
-        } 
-        break;
- 
      default:
         break;
      }
