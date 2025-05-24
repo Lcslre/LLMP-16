@@ -94,9 +94,9 @@ Pour accéder aux registres de configurations il faut utiliser les instructions 
 | JVS X | Si V \= 1 PC ←RX | 1 | 0x7X05 | \- |
 | JVC X | Si V \= 0 PC ←RX | 1 | 0x7X06 | \- |
 | JGT X | Si (N == V) && (Z == 0) PC ←RX | 1 | 0x7X07 | \- |
-| JLT X | Si (N ≠ V) PC ←RX | 1 | 0x7X08 | \- |
+| JLT X | Si (N != V) PC ←RX | 1 | 0x7X08 | \- |
 | JGE X | Si N == V PC ←RX | 1 | 0x7X09 | \- |
-| JLE X | Si (N ≠ V) || Z == 1 PC ←RX | 1 | 0x7X0A | \- |
+| JLE X | Si (N != V) || Z == 1 PC ←RX | 1 | 0x7X0A | \- |
 | JHI X | Si C == 0 && Z == 0 PC ←RX | 1 | 0x7X0B | \- |
 | JLS X | Si C == 1 || Z == 1 PC ←RX | 1 | 0x7X0C | \- |
 | RET | POP PC | 1 | 0x7X0D | \- |
@@ -110,12 +110,12 @@ Pour accéder aux registres de configurations il faut utiliser les instructions 
 | JCCI imm16 | Si C \= 0 PC ←imm | 2 | 0x80n4 0xnnnn | \- |
 | JVSI imm16 | Si V \= 1 PC ←imm | 2 | 0x80n5 0xnnnn | \- |
 | JVCI imm16 | Si V \= 0 PC ←imm | 2 | 0x80n6 0xnnnn | \- |
-| JGTI X | Si (N == V) && (Z == 0) PC ←imm | 2 | 0x8X07 0xnnnn| \- |
-| JLTI X | Si (N ≠ V) PC ←imm | 2 | 0x7X08 0xnnnn| \- |
-| JGEI X | Si N == V PC ←imm | 2 | 0x7X09 0xnnnn| \- |
-| JLEI X | Si (N ≠ V) || Z == 1 PC ←imm | 2 | 0x7X0A 0xnnnn| \- |
-| JHII X | Si C == 0 && Z == 0 PC ←imm | 2 | 0x7X0B 0xnnnn| \- |
-| JLSI X | Si C == 1 || Z == 1 PC ←imm | 2 | 0x7X0C 0xnnnn| \- |
+| JGTI X | Si (N == V) && (Z == 0) PC ←imm | 2 | 0x8Xn7 0xnnnn| \- |
+| JLTI X | Si (N != V) PC ←imm | 2 | 0x7Xn8 0xnnnn| \- |
+| JGEI X | Si N == V PC ←imm | 2 | 0x7Xn9 0xnnnn| \- |
+| JLEI X | Si (N != V) || Z == 1 PC ←imm | 2 | 0x7XnA 0xnnnn| \- |
+| JHII X | Si C == 0 && Z == 0 PC ←imm | 2 | 0x7XnB 0xnnnn| \- |
+| JLSI X | Si C == 1 || Z == 1 PC ←imm | 2 | 0x7XnC 0xnnnn| \- |
 | CALL imm16 | PC ←imm PUSH PC | 2 | 0x80nD 0xnnnn | \- |
 
 ### Les instructions spéciales
