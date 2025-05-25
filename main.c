@@ -10,8 +10,8 @@
 void llmp16_init(llmp16_t *vm)
 {
     vm->vbank = 0;
-    vm->SPR[PC] = 0;
-    vm->SPR[SP] = 0xFFFFFF;
+    vm->R[PC] = 0;
+    vm->R[SP] = 0xFFFFFF;
 
     vm->FLAGS = 0;
     vm->halted = false;
@@ -40,7 +40,47 @@ void llmp16_init(llmp16_t *vm)
 
 }
 
-int main()
+
+void llmp16_run(llmp16_t *vm)
 {
+    while(!vm->halted)
+    {
+        llmp16_keyboard_scan(vm);
+        llmp16_screen_render(vm->screen, vm->VRAM);
+        llmp16_cpu_cycle(vm);
+        
+        printf("%d\n", vm->R[0]);
+        //if(vm->R[PC] >= 18) vm->halted = true;
+    } 
+}
+
+void llmp16_off(llmp16_t *vm)
+{
+    free(vm->memory);
+    free(vm->VRAM[0]);
+    free(vm->VRAM[1]);
+    free(vm->VRAM);
+    llmp16_screen_off(&vm->screen);
+    free(vm);
+}
+
+int main(int argc, char *argv[])
+{
+    /*==================== Initialisation de la machine virtuelle =====================*/
+    llmp16_t* vm = (llmp16_t*)malloc(sizeof(llmp16_t));
+    llmp16_init(vm);
+    if(argc > 1)
+    {
+        llmp16_rom_load(vm, argv[1]);
+    }
+
+    dump_memory(vm->memory, 512);
+
+    /*==================== Boucle de simulation =====================*/
+    llmp16_run(vm);
+    llmp16_off(vm);
+
+
+
     return 0;
 }

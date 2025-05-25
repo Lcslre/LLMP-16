@@ -20,8 +20,9 @@
 *| Ports E/S                | 16 ports * 16 registres                           |
 *| Endian                   | little‑endian (LSB à l’adresse la plus basse)     |
 */
- 
+
 #define LLMP_MEM_SIZE 0xFFFFF  /* 1 Mo */
+#define LLMP_ROM_SIZE 0x8000 /*64 Ko*/
 #define LLMP_VRAM_BANKS   2
 #define LLMP_VRAM_BANK_SIZE 0x10000  /* 64 Ko */
 #define LLMP_IO_PORTS    16
@@ -82,7 +83,7 @@ void llmp16_keyb_init(llmp16_keyboard_t *kb);
 
 /* La fonction llmp16_keyboard_scan() est appelée à chaque itération de la boucle principale de la machine virtuelle.
    Elle permet de scanner l'état du clavier et d'ajouter les touches pressées à la file d'attente. */
-void llmp16_keyboard_scan(llmp16_t *cpu);
+void llmp16_keyboard_scan(llmp16_t *vm);
 
 
 
@@ -106,22 +107,28 @@ void llmp16_timer_count(llmp16_timer_t *timer, uint8_t clk_counter);
 
 /*============================== Machine Virtuelle ==============================*/
 
-#define PC 0
-#define SP 1
+typedef enum {
+   R0,
+   R1,
+   R2,
+   R3,
+   R4,
+   R5,
+   R6,
+   R7,
+   R8,
+   R9,
+   PC,
+   SP,
+   IDXH,
+   IDXL,
+   IDX,
+   ACC
+} llmp16_register_t;
 
-enum {
-  R_ACC = 0,
-  R_IDXH,
-  R_IDXL,
-  R_IDX,
-  R_SP,
-  R_PC
-};
 
-
-typedef struct llmp16_s {
-   uint16_t GPR[10];                      /* R0‑R8 sont des registres généraux */
-   uint32_t SPR[6];                      /*R9-R15 sont des registres spéciaux (Acc, Index_high, Index_low, Index, SP, PC)*/
+typedef struct llmp16_s {                      /* R0‑R8 sont des registres généraux */
+   uint32_t R[16];                      /*R9-R15 sont des registres spéciaux (Acc, Index_high, Index_low, Index, SP, PC)*/
 
    uint8_t  FLAGS;                      /* NZCV, bits 3..0    */
    uint8_t  vbank;                       /* Current VRAM bank   */
@@ -152,98 +159,100 @@ typedef struct llmp16_s {
 
 
 
-void llmp16_run(llmp16_t *cpu);
+void llmp16_run(llmp16_t *vm);
+void llmp16_off(llmp16_t *vm);
 void llmp16_init(llmp16_t *vm);
  
 /*============== Routines de mises à jour des flags ===============*/
  
-static inline void flag_set(llmp16_t *cpu, uint8_t mask, bool cond)
+static inline void flag_set(llmp16_t *vm, uint8_t mask, bool cond)
 {
-   if (cond) cpu->FLAGS |=  mask;
-   else cpu->FLAGS &= ~mask;
+   if (cond) vm->FLAGS |=  mask;
+   else vm->FLAGS &= ~mask;
 }
  
-static inline bool flag_get(const llmp16_t *cpu, uint8_t mask)
+static inline bool flag_get(const llmp16_t *vm, uint8_t mask)
 {
-   return (cpu->FLAGS & mask) != 0;
+   return (vm->FLAGS & mask) != 0;
 }
  
 /* Mise à jour des flags N et Z */
-static inline void flag_nz(llmp16_t *cpu, uint16_t res)
+static inline void flag_nz(llmp16_t *vm, uint16_t res)
 {
-   flag_set(cpu, FLAG_Z, res == 0); // Si le résultat est nul alors on met le flag Z à 1 sinon on le met à 0
-   flag_set(cpu, FLAG_N, (res & 0x8000) != 0); // Si le bit de poids fort est à 1 alors on met le flag N à 1 sinon on le met à 0
+   flag_set(vm, FLAG_Z, res == 0); // Si le résultat est nul alors on met le flag Z à 1 sinon on le met à 0
+   flag_set(vm, FLAG_N, (res & 0x8000) != 0); // Si le bit de poids fort est à 1 alors on met le flag N à 1 sinon on le met à 0
 }
  
-static inline void flag_add_cv(llmp16_t *cpu, uint16_t a, uint16_t b, uint32_t result32)
+static inline void flag_add_cv(llmp16_t *vm, uint16_t a, uint16_t b, uint32_t result32)
 {
-   flag_set(cpu, FLAG_C, result32 > 0xFFFF);
+   flag_set(vm, FLAG_C, result32 > 0xFFFF);
    uint16_t res = (uint16_t)result32;
    /* Overflow si a et b ont le même signe mais le résulat à un singe différent */
    bool ov = (~(a ^ b) & (a ^ res) & 0x8000) != 0;
-   flag_set(cpu, FLAG_V, ov);
+   flag_set(vm, FLAG_V, ov);
 }
  
-static inline void flag_sub_cv(llmp16_t *cpu, uint16_t a, uint16_t b, uint32_t result32)
+static inline void flag_sub_cv(llmp16_t *vm, uint16_t a, uint16_t b, uint32_t result32)
 {
-   flag_set(cpu, FLAG_C, result32 & 0x10000);        /* borrow -> carry clear; we invert later */
+   flag_set(vm, FLAG_C, result32 & 0x10000);        /* borrow -> carry clear; we invert later */
    uint16_t res = (uint16_t)result32;
    bool ov = ((a ^ b) & (a ^ res) & 0x8000) != 0;
-   flag_set(cpu, FLAG_V, ov);
+   flag_set(vm, FLAG_V, ov);
 }
  
 /*============== Routines de manipulation de la mémoire ==============*/
 
+void dump_memory(const uint8_t *mem, size_t size);
+
 
 // segment 0: 0x0000-0x3FFF, segment 1: 0x4000-0x7FFF, segment 2: 0x8000-0xBFFF, segment 3: 0xC000-0xFFFF
-static inline uint8_t mem_read8(llmp16_t *cpu, uint32_t addr) {
-  return cpu->memory[addr];
+static inline uint8_t mem_read8(llmp16_t *vm, uint32_t addr) {
+  return vm->memory[addr];
 }
 
-static inline void mem_write8(llmp16_t *cpu, uint32_t addr, uint8_t v) {
+static inline void mem_write8(llmp16_t *vm, uint32_t addr, uint8_t v) {
  
-   cpu->memory[addr] = v;
+   vm->memory[addr] = v;
 }
  
-static inline uint16_t mem_read16(llmp16_t *cpu, uint32_t addr)
+static inline uint16_t mem_read16(llmp16_t *vm, uint32_t addr)
 {
    /* little‑endian: LSB first */
-   uint8_t lo = mem_read8(cpu, addr);
-   uint8_t hi = mem_read8(cpu, addr + 1);
+   uint8_t lo = mem_read8(vm, addr);
+   uint8_t hi = mem_read8(vm, addr + 1);
    return (uint16_t)(lo | (hi << 8));
 }
  
-static inline void mem_write16(llmp16_t *cpu, uint32_t addr, uint16_t v)
+static inline void mem_write16(llmp16_t *vm, uint32_t addr, uint16_t v)
 {
-   mem_write8(cpu, addr,     (uint8_t)(v & 0xFF));
-   mem_write8(cpu, addr + 1, (uint8_t)(v >> 8));
+   mem_write8(vm, addr,     (uint8_t)(v & 0xFF));
+   mem_write8(vm, addr + 1, (uint8_t)(v >> 8));
 }
 
 
-static inline uint8_t  vram_read(llmp16_t *cpu, uint16_t addr)
+static inline uint8_t  vram_read(llmp16_t *vm, uint16_t addr)
 {
-   return cpu->VRAM[cpu->vbank][addr];
-}
- 
-static inline void vram_write(llmp16_t *cpu, uint16_t addr, uint8_t v)
-{
-   cpu->VRAM[cpu->vbank][addr] = v;
+   return vm->VRAM[vm->vbank][addr];
 }
  
-static inline void llmp16_reset(llmp16_t *cpu)
+static inline void vram_write(llmp16_t *vm, uint16_t addr, uint8_t v)
+{
+   vm->VRAM[vm->vbank][addr] = v;
+}
+ 
+static inline void llmp16_reset(llmp16_t *vm)
 {
 
-   cpu->FLAGS = 0;
-   cpu->vbank = 0;
-   cpu->halted = false;
-   memset(cpu->GPR, 0, sizeof(cpu->GPR));
-   memset(cpu->SPR, 0, sizeof(cpu->SPR));
-   cpu->SPR[PC] = 0;
-   cpu->SPR[SP] = 0xFFFFFF; // Initialisation de la pile
-   memset(cpu->IO, 0, sizeof(cpu->IO));
-   memset(cpu->memory, 0, LLMP_MEM_SIZE);
+   vm->FLAGS = 0;
+   vm->vbank = 0;
+   vm->halted = false;
+   memset(vm->R, 0, sizeof(vm->R));
+   vm->R[PC] = 0;
+   vm->R[SP] = 0xFFFFFF; // Initialisation de la pile
+   memset(vm->IO, 0, sizeof(vm->IO));
+   memset(vm->memory, 0, LLMP_MEM_SIZE);
    for (int i = 0; i < LLMP_VRAM_BANKS; ++i)
-    memset(cpu->VRAM[i], 0, LLMP_VRAM_BANK_SIZE);
+    memset(vm->VRAM[i], 0, LLMP_VRAM_BANK_SIZE);
 }
 
  /*============== Routines de fetch/decode/execute ==============*/
@@ -260,31 +269,23 @@ typedef struct {
    uint16_t raw;        
 } instr_t;
  
-static inline uint16_t fetch(llmp16_t *cpu)
+static inline uint16_t fetch(llmp16_t *vm)
 {
-   uint16_t w = mem_read16(cpu, cpu->SPR[PC]);
-   cpu->SPR[PC] += 2;
+   uint16_t w = mem_read16(vm, vm->R[PC]);
+   vm->R[PC] += 2;
    return w;
 }
 
-instr_t decode(llmp16_t *cpu, uint16_t instr);
-void execute(llmp16_t *cpu, instr_t in);
-void llmp16_cpu_cycle(llmp16_t *cpu);
+instr_t decode(llmp16_t *vm, uint16_t instr);
+void execute(llmp16_t *vm, instr_t in);
+void llmp16_cpu_cycle(llmp16_t *vm);
 
 
 /*=========================== header fichier binaire ROM ===========================*/
 #define FILE_CODE 0xFAE1
 
-// typedef struct {
-//   uint16_t code;
-//   uint8_t nb_pages;
-//   uint16_t taille_page[LLMP_ROM_BANKS];
-// }llmp16_header_rom_file_t;
 
-// /* chaque fichier binaire entré dans la ROM devra avoir le code FILE_CODE pour etre traité, 
-// le nombre de pages utilisés dans le fichier, et la taille de chaque page.*/
-
-// void llmp16_rom_load(llmp16_t *cpu, char* file);
+void llmp16_rom_load(llmp16_t *vm, char* file);
 
 /*=========================== Lecteur de  disquettes ===========================*/
 
