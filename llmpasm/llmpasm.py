@@ -8,6 +8,9 @@ from tokens import *
 from instructions import *
 from errors import *
 
+from dataclasses import dataclass
+import argparse
+
 
 class Lexer:
 	number = re.compile(r"^-?\d+$")
@@ -83,7 +86,6 @@ class Parser:
 			try:
 				token = self.lexer.pop(TOKEN)
 			except LexerError:
-				print("done")
 				break
 
 			if isinstance(token, COMMENT_OPEN):
@@ -169,7 +171,6 @@ class Parser:
 						case _:
 							raise ParsingError(token.line, f"Unknown operator '{s}'")
 				case LABELDEF(i=label):
-					print(f"Label {label}")
 					context[label] = pc
 				case _:
 					raise ParsingError(token.line, f"Wrong token '{token}'")
@@ -178,7 +179,17 @@ class Parser:
 
 
 if __name__ == "__main__":
-	#sys.tracebacklimit = 0
+	parser = argparse.ArgumentParser(
+		prog="LLMP16asm",
+		description="Assembly compiler for the LLMP16 microprocessor")
+
+	parser.add_argument("filename")
+	parser.add_argument("-d", "--debug", action="store_true")
+
+	args = parser.parse_args()
+
+	if not args.debug:
+		sys.tracebacklimit = 0
 
 	with open(sys.argv[1]) as file:
 		lexer = Lexer(file.read())
