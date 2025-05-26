@@ -64,4 +64,3 @@ void llmp16_pic_update(llmp16_t *cpu, llmp16_pic_t *pic)
 
     llmp16_pic_writeIO(cpu, pic);
 }
-
