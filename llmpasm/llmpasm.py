@@ -2,6 +2,7 @@
 
 import sys
 import re
+import os
 from typing import Type, TypeVar
 
 from tokens import *
@@ -184,14 +185,24 @@ if __name__ == "__main__":
 		description="Assembly compiler for the LLMP16 microprocessor")
 
 	parser.add_argument("filename")
+	parser.add_argument("-o", "--output", type=str, default=f"{os.getcwd()}/a.out")
 	parser.add_argument("-d", "--debug", action="store_true")
+	parser.add_argument("-v", "--verbose", action="store_true")
 
 	args = parser.parse_args()
 
 	if not args.debug:
 		sys.tracebacklimit = 0
 
-	with open(sys.argv[1]) as file:
-		lexer = Lexer(file.read())
-		for s in Parser(lexer).parse():
-			print(s)
+	with open(args.filename) as inputfile:
+		lexer = Lexer(inputfile.read())
+		parsed = Parser(lexer).parse()
+
+		if args.verbose:
+			print(f"Compiled content from {args.filename}:")
+			for s in parsed:
+				print(f"\t{s}")
+
+		with open(args.output, "bw") as outputfile:
+			for s in parsed:
+				outputfile.write(s.compile())
