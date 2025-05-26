@@ -64,7 +64,7 @@ void llmp16_screen_render(llmp16_screen_t screen,uint8_t** VRAM)
     {
         for (int y = 0; y < LLMP_SCREEN_HEIGHT; ++y)
         {
-            memcpy(pixels + y * pitch, VRAM[1] + y * LLMP_SCREEN_WIDTH, LLMP_SCREEN_WIDTH);
+            memcpy(pixels + y * pitch, VRAM[0] + y * LLMP_SCREEN_WIDTH, LLMP_SCREEN_WIDTH);
         }
         SDL_UnlockTexture(screen.framebuffer);
     }
@@ -75,8 +75,8 @@ void llmp16_screen_render(llmp16_screen_t screen,uint8_t** VRAM)
     SDL_RenderPresent(screen.renderer);
 
     // Etape 3 : On échange VRAM 1 et VRAM 0
-    uint8_t* tmp = VRAM[0];
-    VRAM[0] = VRAM[1];
-    VRAM[1] = tmp;
+    // uint8_t* tmp = VRAM[0];
+    // VRAM[0] = VRAM[1];
+    // VRAM[1] = tmp;
 }
 

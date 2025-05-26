@@ -38,11 +38,77 @@ enum{
 
 typedef struct llmp16_s llmp16_t;
 
+
+/*
+ * Contrôleur DMA pour LLMP16
+ * ---------------------------
+ * Permet de transférer des blocs mémoire (RAM↔RAM, RAM↔VRAM, DISK↔RAM) sans vm.
+ *
+ * IO Port 7 (DMA) :
+ *   Reg 0 (R0) : SRC_ADDR          (bits 15..0)
+ *   Reg 1 (R1) : DST_ADDR          (bits 15..0)
+ *   Reg 2 (R2) : COUNT             (nombre d’octets à transférer, bits 15..0)
+ *   Reg 3 (R3) : CTRL              (bit 0 = DMA_ENABLE, bit 1 = IRQ_ENABLE)
+ *   Reg 4 (R4) : STAT              (bit 0 = BUSY, bit 1 = DONE, bit 2 = ERROR)
+ */
+
+#define LLMP_DMA_PORT       7
+#define LLMP_DMA_REG_SRC    0
+#define LLMP_DMA_REG_DST    1
+#define LLMP_DMA_REG_CNT    2
+#define LLMP_DMA_REG_CTRL   3
+#define LLMP_DMA_REG_STAT   4
+#define LLMP_DMA_REG_MAX    5
+
+/* Contrôle */
+#define DMA_CTRL_ENABLE     0x01  /* Démarrer le transfert */
+#define DMA_CTRL_IRQ_EN     0x02  /* Générer une IRQ à la fin */
+
+/* Statut */
+#define DMA_STAT_BUSY       0x01
+#define DMA_STAT_DONE       0x02
+#define DMA_STAT_ERROR      0x04
+
+typedef struct {
+    uint16_t src_addr;   /* Adresse source 16-bits */
+    uint16_t dst_addr;   /* Adresse destination 1--bits */
+    uint16_t count;      /* Nombre d’octets à copier */
+    uint8_t  ctrl;       /* Registre de contrôle */
+    uint8_t  stat;       /* Registre de statut */
+    bool     irq_line;   /* Ligne IRQ générée */
+} llmp16_dma_t;
+
+
+void llmp16_dma_init(llmp16_dma_t *dma);
+void llmp16_dma_cpy(llmp16_t *vm, llmp16_dma_t *dma);
+void llmp16_dma_readIO(llmp16_t *vm, llmp16_dma_t *dma);
+void llmp16_dma_step(llmp16_t *vm, llmp16_dma_t *dma);
+
+// Numéro de port IO pour le blitter
+#define LLMP_BLT_PORT       8
+
+// Registres du blitter (tous 16 bits)
+#define LLMP_BLT_REG_SRC    0  // adresse source en mémoire (RAM ou ROM)
+#define LLMP_BLT_REG_X      1  // coordonnée X de destination (en pixels, 0..319)
+#define LLMP_BLT_REG_Y      2  // coordonnée Y de destination (en pixels, 0..199)
+#define LLMP_BLT_REG_W      3  // largeur du bloc (en pixels)
+#define LLMP_BLT_REG_H      4  // hauteur du bloc (en pixels)
+#define LLMP_BLT_REG_CTRL   5  // contrôle : bit 0 = démarrer
+
+// bit 0 = START, bit 1 = BITMODE (0=copie simple, 1=décompression bit-à-bit)
+#define BLT_CTRL_START      0x01
+#define BLT_CTRL_BITMODE    0x02
+
+
+void llmp16_blitter_step(llmp16_t *vm);
+
+
+
 // =========================== screen =====================================
 
 #define LLMP_SCREEN_HEIGHT 200
 #define LLMP_SCREEN_WIDTH  320
-#define LLMP_SCREEN_SCALE 4
+#define LLMP_SCREEN_SCALE 2
 #define LLMP_WINDOW_WIDTH LLMP_SCREEN_WIDTH * LLMP_SCREEN_SCALE
 #define LLMP_WINDOW_HEIGHT LLMP_SCREEN_HEIGHT * LLMP_SCREEN_SCALE
 
@@ -71,15 +137,8 @@ Il y a 2 registres de 16 bits chacun. Le registre 0 contient le code de la touch
 Le registre 1 contient le status du clavier (touche pressée ou pas).
 */
 
-#define LLMP_KEY_QUEUE_SIZE 8
 
-typedef struct {
-   uint8_t keys[LLMP_KEY_QUEUE_SIZE];
-   uint8_t head;
-   uint8_t tail;
-} llmp16_keyboard_t;
-
-void llmp16_keyb_init(llmp16_keyboard_t *kb);
+void llmp16_keyb_init();
 
 /* La fonction llmp16_keyboard_scan() est appelée à chaque itération de la boucle principale de la machine virtuelle.
    Elle permet de scanner l'état du clavier et d'ajouter les touches pressées à la file d'attente. */
@@ -140,8 +199,9 @@ typedef struct llmp16_s {                      /* R0‑R8 sont des registres gé
 
    uint64_t clk;
 
-   llmp16_keyboard_t keyboard;
    llmp16_screen_t screen;
+
+   llmp16_dma_t dma;
 
 
    llmp16_timer_t timer1;                  /* Timer 1 (16 bits) */
@@ -150,6 +210,11 @@ typedef struct llmp16_s {                      /* R0‑R8 sont des registres gé
 
  
    uint16_t IO[LLMP_IO_PORTS][LLMP_IO_REGS];  /* 16‑bit regs  */
+
+   // llmp16.h, dans votre struct llmp16_t
+uint16_t key_buffer;  // dernier code reçu
+uint8_t  key_flag;    // =1 si key_buffer contient une donnée non lue
+
 
    // Interruptions
    uint16_t int_vector_pending;

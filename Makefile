@@ -7,7 +7,7 @@ BUILD_DIR = build
 SRC = $(wildcard $(SRC_DIR)/*.c)
 OBJ = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SRC))
 
-DEPS = llmp16.h llmp16_dma.h llmp16_PIC.h BIOS_FONT.h
+DEPS = llmp16.h llmp16_PIC.h BIOS_FONT.h
 TARGET = main
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c $(DEPS)
