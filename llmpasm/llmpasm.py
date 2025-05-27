@@ -169,6 +169,14 @@ class Parser:
 										op1 = LABELED_ADDRESS(op1.line, label, context)
 										pc += 2
 							page.append(operation(s, op1))
+						case s if s in SPECIAL.defs:
+							page.append(SPECIAL(s))
+						case s if s in INOUT.defs:
+							page.append(
+								INOUT(s, 
+									self.lexer.pop(REGISTER),
+									self.lexer.pop(REGISTER),
+									self.lexer.pop(IMM)))
 						case _:
 							raise ParsingError(token.line, f"Unknown operator '{s}'")
 				case LABELDEF(i=label):

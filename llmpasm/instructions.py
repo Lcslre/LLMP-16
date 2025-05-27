@@ -220,3 +220,36 @@ class JUMP_A(JUMP):
 			self.x.i & 0xFF,
 			(self.x.i >> 8) & 0xFF
 		])
+
+
+class SPECIAL(INSTR):
+	defs = {
+		"nop": ("Nop", 0, 0),
+		"hlt": ("Halt", 0, 1),
+		"wfi": ("Wfi", 0, 2),
+		"int": ("Int", 0, 3),
+		"iret": ("Iret", 0, 4)
+	}
+
+	def __init__(self, op: str):
+		super().__init__(op, None, None)
+
+	def compile(self) -> bytes:
+		return bytes([ self.defs[self.op][2], 0 ])
+
+
+class INOUT(INSTR):
+	defs = {
+		"in": ("In", 3, 9),
+		"out": ("Out", 3, 10)
+	}
+
+	def __init__(self, op: str, x: REGISTER, y: REGISTER, o: IMM):
+		super().__init__(op, x, y)
+		self.offset = o
+
+	def compile(self) -> bytes:
+		return bytes([
+			(self.y.i << 4) + self.offset.i,
+			(self.defs[self.op][2] << 4) + self.x.i
+		])
