@@ -234,7 +234,7 @@ static inline void llmp16_reg_set(llmp16_t *vm, llmp16_register_t X, uint32_t v)
 {
    if(X > 15) return;
    if(X < 8) vm->R16[X] = (uint16_t)v;
-   else vm->R32[X-7] = v;
+   else vm->R32[X-8] = v;
 }
 
 void llmp16_run(llmp16_t *vm);

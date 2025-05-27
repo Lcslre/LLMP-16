@@ -48,7 +48,10 @@ void llmp16_run(llmp16_t *vm)
     while(!vm->halted)
     {
         llmp16_cpu_cycle(vm);
-        llmp16_screen_render(vm->screen, vm->VRAM);
+        if((vm->IO[0][0] & 0x1) == 1){
+            llmp16_screen_render(vm->screen, vm->VRAM);
+            vm->IO[0][0] = 0;
+        }
         llmp16_keyboard_scan(vm);
         llmp16_dma_step(vm, &vm->dma);
         llmp16_blitter_step(vm);
