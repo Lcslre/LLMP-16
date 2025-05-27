@@ -406,10 +406,7 @@ void execute(llmp16_t *vm, instr_t in)
         vm->IO[port][reg] = llmp16_reg_get(vm, in.X);
  
 
-        /* sélection d'une banque de VRAM: OUT Rx, $0001 */
-        if (port == 0x00 && reg == 0x01) {
-            vm->vbank = llmp16_reg_get(vm, in.X) & 0x01;
-        }
+        
         break;
     }
      default:

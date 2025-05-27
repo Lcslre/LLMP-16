@@ -12,7 +12,7 @@ void llmp16_keyb_init()
 void llmp16_keyboard_scan(llmp16_t *vm)
 {
     SDL_Event event;
-    if (SDL_PollEvent(&event)) {
+    while (SDL_PollEvent(&event)) {
         if (event.type == SDL_KEYDOWN) {
             vm->IO[1][0] = event.key.keysym.sym; // Envoie la touche pressée au registre 0
             //vm->IO[1][1] = 0x01; // Indique qu'une touche est pressée
