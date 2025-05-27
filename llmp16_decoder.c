@@ -314,10 +314,14 @@ void execute(llmp16_t *vm, instr_t in)
         case 0x2: /* STRI MEM[imm] <- RX */
             mem_write16(vm, in.addr, llmp16_reg_get(vm, in.X));
             break;
-        case 0x3: /* VLOAD */
+        case 0x3: /* PUSHI Imm */
+            llmp16_reg_set(vm, SP, llmp16_reg_get(vm, SP)-2);
+            mem_write16(vm, llmp16_reg_get(vm, SP), in.imm);
+            break;
+        case 0x5: /* VLOADI */
             llmp16_reg_set(vm, in.X, vram_read(vm, in.imm));
             break;
-        case 0x4: /* VSTORE */
+        case 0x6: /* VSTOREI */
             vram_write(vm, in.imm, llmp16_reg_get(vm, in.X) & 0xFF);
             break;
         default:
