@@ -112,17 +112,20 @@ void llmp16_blitter_step(llmp16_t *vm);
 #define LLMP_WINDOW_WIDTH LLMP_SCREEN_WIDTH * LLMP_SCREEN_SCALE
 #define LLMP_WINDOW_HEIGHT LLMP_SCREEN_HEIGHT * LLMP_SCREEN_SCALE
 
+
+
+#define LLMP_SCREEN_ENABLE 0x1
+
 typedef struct
 {
     SDL_Window *window;
     SDL_Renderer* renderer;
     SDL_Texture *framebuffer;
- 
 }llmp16_screen_t;
 
 int llmp16_screen_init(llmp16_screen_t *screen);
 void llmp16_screen_off(llmp16_screen_t *screen);
-void llmp16_screen_render(llmp16_screen_t screen, uint8_t** VRAM);
+void llmp16_screen_render(llmp16_screen_t screen, uint8_t* VRAM);
 
 
 /*=========================== KeyBoard =====================================*/
@@ -191,14 +194,12 @@ typedef struct llmp16_s {                      /* R0‑R8 sont des registres gé
    uint32_t R32[8];
 
    uint8_t  FLAGS;                      /* NZCV, bits 3..0    */
-   uint8_t  vbank;                       /* Current VRAM bank   */
 
    bool halted;
 
    uint8_t  *memory;
-   uint8_t  **VRAM; // uint8_t  VRAM[LLMP_VRAM_BANKS][LLMP_VRAM_BANK_SIZE];
+   uint8_t  *VRAM; 
 
-   uint64_t clk;
 
    llmp16_screen_t screen;
 
@@ -211,11 +212,6 @@ typedef struct llmp16_s {                      /* R0‑R8 sont des registres gé
 
  
    uint16_t IO[LLMP_IO_PORTS][LLMP_IO_REGS];  /* 16‑bit regs  */
-
-   // llmp16.h, dans votre struct llmp16_t
-uint16_t key_buffer;  // dernier code reçu
-uint8_t  key_flag;    // =1 si key_buffer contient une donnée non lue
-
 
    // Interruptions
    uint16_t int_vector_pending;
@@ -310,19 +306,18 @@ static inline void mem_write16(llmp16_t *vm, uint32_t addr, uint16_t v)
 
 static inline uint8_t  vram_read(llmp16_t *vm, uint16_t addr)
 {
-   return vm->VRAM[vm->vbank][addr];
+   return vm->VRAM[addr];
 }
  
 static inline void vram_write(llmp16_t *vm, uint16_t addr, uint8_t v)
 {
-   vm->VRAM[vm->vbank][addr] = v;
+   vm->VRAM[addr] = v;
 }
  
 static inline void llmp16_reset(llmp16_t *vm)
 {
 
    vm->FLAGS = 0;
-   vm->vbank = 0;
    vm->halted = false;
    memset(vm->R16, 0, sizeof(vm->R16));
    memset(vm->R32, 0, sizeof(vm->R32));
@@ -330,8 +325,7 @@ static inline void llmp16_reset(llmp16_t *vm)
    llmp16_reg_set(vm, SP, 0xFFFFF);
    memset(vm->IO, 0, sizeof(vm->IO));
    memset(vm->memory, 0, LLMP_MEM_SIZE);
-   for (int i = 0; i < LLMP_VRAM_BANKS; ++i)
-    memset(vm->VRAM[i], 0, LLMP_VRAM_BANK_SIZE);
+   memset(vm->VRAM, 0, LLMP_VRAM_BANK_SIZE);
 }
 
  /*============== Routines de fetch/decode/execute ==============*/
