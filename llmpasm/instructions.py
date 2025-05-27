@@ -61,8 +61,8 @@ class ARITH_R(ARITH):
 		op2 = self.y.i << 4 if self.y is not None else 0
 
 		return bytes([
-			(1 << 4) + self.x.i, 
-			op2 + self.defs[self.op][2]
+			op2 + self.defs[self.op][2],
+			(1 << 4) + self.x.i
 		])
 
 
@@ -72,10 +72,10 @@ class ARITH_I(ARITH):
 
 	def compile(self) -> bytes:
 		return bytes([
-			(2 << 4) + self.x.i,
 			self.defs[self.op][2],
-			self.y.i >> 8,
-			self.y.i & 0xFF
+			(2 << 4) + self.x.i,
+			self.y.i & 0xFF,
+			self.y.i >> 8
 		])
 
 
@@ -100,8 +100,8 @@ class LOGIC_R(LOGIC):
 		op2 = self.y.i << 4 if self.y is not None else 0
 
 		return bytes([
-			(3 << 4) + self.x.i, 
-			op2 + self.defs[self.op][2]
+			op2 + self.defs[self.op][2],
+			(3 << 4) + self.x.i
 		])
 
 
@@ -111,10 +111,10 @@ class LOGIC_I(LOGIC):
 
 	def compile(self) -> bytes:
 		return bytes([
-			(4 << 4) + self.x.i,
 			self.defs[self.op][2],
-			self.y.i >> 8,
-			self.y.i & 0xFF
+			(4 << 4) + self.x.i,
+			self.y.i & 0xFF,
+			self.y.i >> 8
 		])
 
 
@@ -140,8 +140,8 @@ class MEMCONTROL_R(MEMCONTROL):
 	def compile(self) -> bytes:
 		op2 = self.y.i << 4 if self.y is not None else 0
 		return bytes([
-			(5 << 4) + self.x.i,
-			op2 + self.defs[self.op][2]
+			op2 + self.defs[self.op][2],
+			(5 << 4) + self.x.i
 		])
 
 
@@ -154,10 +154,10 @@ class MEMCONTROL_I(MEMCONTROL):
 		op2 = self.x.i if self.y is None else self.y.i
 
 		return bytes([
-			(6 << 4) + op1,
 			self.defs[self.op][2],
-			op2 >> 8,
-			op2 & 0xFF
+			(6 << 4) + op1,
+			op2 & 0xFF,
+			op2 >> 8
 		])
 
 
@@ -167,10 +167,10 @@ class MEMCONTROL_A(MEMCONTROL):
 
 	def compile(self) -> bytes:
 		return bytes([
-			(6 << 4) + self.x.i,
 			((self.y.i & 0xF0000) >> 12) + self.defs[self.op][2],
-			(self.y.i >> 8) & 0xFF,
-			self.y.i & 0xFF
+			(6 << 4) + self.x.i,
+			self.y.i & 0xFF,
+			(self.y.i >> 8) & 0xFF
 		])
 
 
@@ -204,8 +204,8 @@ class JUMP_R(JUMP):
 	def compile(self) -> bytes:
 		op1 = self.x.i if self.x is not None else 0
 		return bytes([
-			(7 << 4) + op1,
-			self.defs[self.op][2]
+			self.defs[self.op][2],
+			(7 << 4) + op1
 		])
 
 
@@ -215,8 +215,8 @@ class JUMP_A(JUMP):
 
 	def compile(self) -> bytes:
 		return bytes([
-			8 << 4,
 			((self.x.i & 0xF0000) >> 12) + self.defs[self.op][2],
-			(self.x.i >> 8) & 0xFF,
-			self.x.i & 0xFF
+			8 << 4,
+			self.x.i & 0xFF,
+			(self.x.i >> 8) & 0xFF
 		])

@@ -1,22 +1,11 @@
-add r1 0x45
-SUB R3 R4
-
-/* salut ça va 
- * oui trkl
+/* Programme de test
+ * pour LLMP16asm
  */
 
-salut:
-sub r2 3
-and r4 0x145
-not r7
+mov r0 0
+mov r1 0xFF
 
-ld r1 [0xABCDE]
-mov r2 [123]
-
-push 0xCAFE
-
-pop 0x3
-
-jmp [0x4CAFE]
-ret
-call [salut]
+loop:
+	vstr r0 r1
+	inc r0
+	jmp [loop]
