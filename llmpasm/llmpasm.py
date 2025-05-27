@@ -67,7 +67,7 @@ class Lexer:
 		if res is not None:
 			self.current_line = res.line
 			if not isinstance(res, t):
-				raise LexerError(res.line, f"Token '{res}' type is incorrect ({type(res)} is not {t})")
+				raise LexerError(res.line, f"Token '{res}' type is incorrect ({type(res).__name__} is not {t.__name__})")
 		else:
 			raise LexerError(self.current_line, "No more token available")
 
