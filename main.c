@@ -105,7 +105,7 @@ void llmp16_run(llmp16_t* vm) {
 
         //llmp16_debug_dump(vm);
 
-        printf("%d\n", llmp16_reg_get(vm, 0));
+        //printf("%d\n", llmp16_reg_get(vm, 0));
 
         // un seul rendu par frame
         llmp16_screen_render(vm->screen, vm->VRAM);
