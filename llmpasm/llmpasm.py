@@ -3,7 +3,8 @@
 import sys
 import re
 import os
-from typing import Type, TypeVar
+import types
+from typing import Type, TypeVar, get_args
 
 from tokens import *
 from instructions import *
@@ -55,6 +56,10 @@ class Lexer:
 					token = COMMENT_OPEN(idx+1)
 				elif s == "*/":
 					token = COMMENT_CLOSE(idx+1)
+				elif s == ".bytes":
+					token = BYTES(idx+1)
+				elif s == "(end)":
+					token = END(idx+1)
 				else:
 					token = OPERATOR(idx+1, token)
 
@@ -67,7 +72,8 @@ class Lexer:
 		if res is not None:
 			self.current_line = res.line
 			if not isinstance(res, t):
-				raise LexerError(res.line, f"Token '{res}' type is incorrect ({type(res)} is not {t})")
+				name2 = t.__name__ if not isinstance(t, types.UnionType) else " or ".join([c.__name__ for c in get_args(t)])
+				raise LexerError(res.line, f"Token '{res}' type is incorrect ({type(res).__name__} is not {name2})")
 		else:
 			raise LexerError(self.current_line, "No more token available")
 
@@ -169,10 +175,23 @@ class Parser:
 										op1 = LABELED_ADDRESS(op1.line, label, context)
 										pc += 2
 							page.append(operation(s, op1))
+						case s if s in SPECIAL.defs:
+							page.append(SPECIAL(s))
+						case s if s in INOUT.defs:
+							page.append(
+								INOUT(s, 
+									self.lexer.pop(REGISTER),
+									self.lexer.pop(REGISTER),
+									self.lexer.pop(IMM)))
 						case _:
 							raise ParsingError(token.line, f"Unknown operator '{s}'")
 				case LABELDEF(i=label):
 					context[label] = pc
+				case BYTES():
+					pbytearray = []
+					while not isinstance((b := self.lexer.pop(IMM | END)), END):
+						pbytearray.append(b)
+					page.append(BYTEARRAY(pbytearray))
 				case _:
 					raise ParsingError(token.line, f"Wrong token '{token}'")
 

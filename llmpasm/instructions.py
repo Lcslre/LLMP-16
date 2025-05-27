@@ -1,7 +1,7 @@
 import struct
 import binascii
 from abc import ABC, abstractmethod
-
+from errors import ParsingError
 from tokens import *
 
 
@@ -220,3 +220,50 @@ class JUMP_A(JUMP):
 			self.x.i & 0xFF,
 			(self.x.i >> 8) & 0xFF
 		])
+
+
+class SPECIAL(INSTR):
+	defs = {
+		"nop": ("Nop", 0, 0),
+		"hlt": ("Halt", 0, 1),
+		"wfi": ("Wfi", 0, 2),
+		"int": ("Int", 0, 3),
+		"iret": ("Iret", 0, 4)
+	}
+
+	def __init__(self, op: str):
+		super().__init__(op, None, None)
+
+	def compile(self) -> bytes:
+		return bytes([ self.defs[self.op][2], 0 ])
+
+
+class INOUT(INSTR):
+	defs = {
+		"in": ("In", 3, 9),
+		"out": ("Out", 3, 10)
+	}
+
+	def __init__(self, op: str, x: REGISTER, y: REGISTER, o: IMM):
+		super().__init__(op, x, y)
+		self.offset = o
+
+	def compile(self) -> bytes:
+		return bytes([
+			(self.y.i << 4) + self.offset.i,
+			(self.defs[self.op][2] << 4) + self.x.i
+		])
+
+
+class BYTEARRAY(INSTR):
+	defs = { "bytearray": ("Bytearray", 0, 0) }
+
+	def __init__(self, pbytearray: list[IMM]):
+		super().__init__("bytearray", None, None)
+		self.bytes = pbytearray
+		for b in self.bytes:
+			if b.i > 0x100:
+				raise ParsingError(b.line, f"Byte {b.i} (0x{b.i:x}) in bytearray is bigger than 8 bits")
+
+	def compile(self) -> bytes:
+		return bytes([b.i for b in self.bytes])
