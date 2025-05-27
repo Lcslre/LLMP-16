@@ -3,7 +3,8 @@
 import sys
 import re
 import os
-from typing import Type, TypeVar
+import types
+from typing import Type, TypeVar, get_args
 
 from tokens import *
 from instructions import *
@@ -67,7 +68,8 @@ class Lexer:
 		if res is not None:
 			self.current_line = res.line
 			if not isinstance(res, t):
-				raise LexerError(res.line, f"Token '{res}' type is incorrect ({type(res).__name__} is not {t.__name__})")
+				name2 = t.__name__ if not isinstance(t, types.UnionType) else " or ".join([c.__name__ for c in get_args(t)])
+				raise LexerError(res.line, f"Token '{res}' type is incorrect ({type(res).__name__} is not {name2})")
 		else:
 			raise LexerError(self.current_line, "No more token available")
 
