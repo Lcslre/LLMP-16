@@ -11,8 +11,8 @@
 void llmp16_init(llmp16_t *vm)
 {
     vm->vbank = 0;
-    vm->R[PC] = 0;
-    vm->R[SP] = 0xFFFFFF;
+    llmp16_reg_set(vm, PC, 0);
+    llmp16_reg_set(vm, SP, 0xFFFFF);
 
     vm->FLAGS = 0;
     vm->halted = false;
@@ -45,7 +45,6 @@ void llmp16_init(llmp16_t *vm)
 
 void llmp16_run(llmp16_t *vm)
 {
-    SDL_Event event;
     while(!vm->halted)
     {
         llmp16_cpu_cycle(vm);
@@ -53,7 +52,7 @@ void llmp16_run(llmp16_t *vm)
         llmp16_keyboard_scan(vm);
         llmp16_dma_step(vm, &vm->dma);
         llmp16_blitter_step(vm);
-        printf("%d\n", vm->R[0]);
+        //printf("%d\n", vm->R[0]);
         //if(vm->R[PC] >= 18) vm->halted = true;
     } 
 }

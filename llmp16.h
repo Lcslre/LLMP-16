@@ -177,17 +177,18 @@ typedef enum {
    R7,
    R8,
    R9,
+   R10,
+   RR11,
    PC,
    SP,
-   IDXH,
-   IDXL,
    IDX,
    ACC
 } llmp16_register_t;
 
 
 typedef struct llmp16_s {                      /* R0‑R8 sont des registres généraux */
-   uint32_t R[16];                      /*R9-R15 sont des registres spéciaux (Acc, Index_high, Index_low, Index, SP, PC)*/
+   uint16_t R16[8];                      /*R9-R15 sont des registres spéciaux (Acc, Index_high, Index_low, Index, SP, PC)*/
+   uint32_t R32[8];
 
    uint8_t  FLAGS;                      /* NZCV, bits 3..0    */
    uint8_t  vbank;                       /* Current VRAM bank   */
@@ -222,7 +223,19 @@ uint8_t  key_flag;    // =1 si key_buffer contient une donnée non lue
 
 } llmp16_t;
 
+static inline uint32_t llmp16_reg_get(llmp16_t *vm, llmp16_register_t X)
+{
+   if(X > 15) return 0x00;
+   if(X < 8) return vm->R16[X];
+   else return vm->R32[X-8];
+}
 
+static inline void llmp16_reg_set(llmp16_t *vm, llmp16_register_t X, uint32_t v)
+{
+   if(X > 15) return;
+   if(X < 8) vm->R16[X] = (uint16_t)v;
+   else vm->R32[X-7] = v;
+}
 
 void llmp16_run(llmp16_t *vm);
 void llmp16_off(llmp16_t *vm);
@@ -311,9 +324,10 @@ static inline void llmp16_reset(llmp16_t *vm)
    vm->FLAGS = 0;
    vm->vbank = 0;
    vm->halted = false;
-   memset(vm->R, 0, sizeof(vm->R));
-   vm->R[PC] = 0;
-   vm->R[SP] = 0xFFFFFF; // Initialisation de la pile
+   memset(vm->R16, 0, sizeof(vm->R16));
+   memset(vm->R32, 0, sizeof(vm->R32));
+   llmp16_reg_set(vm, PC, 0);
+   llmp16_reg_set(vm, SP, 0xFFFFF);
    memset(vm->IO, 0, sizeof(vm->IO));
    memset(vm->memory, 0, LLMP_MEM_SIZE);
    for (int i = 0; i < LLMP_VRAM_BANKS; ++i)
@@ -336,8 +350,8 @@ typedef struct {
  
 static inline uint16_t fetch(llmp16_t *vm)
 {
-   uint16_t w = mem_read16(vm, vm->R[PC]);
-   vm->R[PC] += 2;
+   uint16_t w = mem_read16(vm, llmp16_reg_get(vm, PC));
+   llmp16_reg_set(vm, PC, llmp16_reg_get(vm,PC)+2);
    return w;
 }
 
