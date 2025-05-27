@@ -1,14 +1,11 @@
-.bank 3
-
-add r1 0x45
-SUB R3 R4
-
-.bank 6
-
-/* salut ça va 
- * oui trkl
+/* Programme de test
+ * pour LLMP16asm
  */
 
-sub r2 3
-and r4 0x145
-not r7
+mov r0 0
+mov r1 0xFF
+
+loop:
+	vstr r0 r1
+	inc r0
+	jmp [loop]
