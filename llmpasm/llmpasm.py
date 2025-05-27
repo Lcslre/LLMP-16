@@ -56,6 +56,10 @@ class Lexer:
 					token = COMMENT_OPEN(idx+1)
 				elif s == "*/":
 					token = COMMENT_CLOSE(idx+1)
+				elif s == ".bytes":
+					token = BYTES(idx+1)
+				elif s == "(end)":
+					token = END(idx+1)
 				else:
 					token = OPERATOR(idx+1, token)
 
@@ -183,6 +187,11 @@ class Parser:
 							raise ParsingError(token.line, f"Unknown operator '{s}'")
 				case LABELDEF(i=label):
 					context[label] = pc
+				case BYTES():
+					pbytearray = []
+					while not isinstance((b := self.lexer.pop(IMM | END)), END):
+						pbytearray.append(b)
+					page.append(BYTEARRAY(pbytearray))
 				case _:
 					raise ParsingError(token.line, f"Wrong token '{token}'")
 

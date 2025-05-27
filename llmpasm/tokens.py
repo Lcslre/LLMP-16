@@ -96,3 +96,11 @@ class LABEL(TOKEN):
 	def __init__(self, line: int, label: str):
 		super().__init__(line)
 		self.i = label
+
+
+class BYTES(TOKEN):
+	name = "Bytes"
+
+
+class END(TOKEN):
+	name = "End"

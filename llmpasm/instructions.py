@@ -1,7 +1,7 @@
 import struct
 import binascii
 from abc import ABC, abstractmethod
-
+from errors import ParsingError
 from tokens import *
 
 
@@ -253,3 +253,17 @@ class INOUT(INSTR):
 			(self.y.i << 4) + self.offset.i,
 			(self.defs[self.op][2] << 4) + self.x.i
 		])
+
+
+class BYTEARRAY(INSTR):
+	defs = { "bytearray": ("Bytearray", 0, 0) }
+
+	def __init__(self, pbytearray: list[IMM]):
+		super().__init__("bytearray", None, None)
+		self.bytes = pbytearray
+		for b in self.bytes:
+			if b.i > 0x100:
+				raise ParsingError(b.line, f"Byte {b.i} (0x{b.i:x}) in bytearray is bigger than 8 bits")
+
+	def compile(self) -> bytes:
+		return bytes([b.i for b in self.bytes])
