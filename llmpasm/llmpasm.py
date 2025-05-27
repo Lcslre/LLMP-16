@@ -20,7 +20,7 @@ class Lexer:
 	address = re.compile(r"^\[\d+\]$")
 	hexaddress = re.compile(r"^\[0x[\w\d]+\]$")
 
-	register = re.compile(r"^r\d$")
+	register = re.compile(r"^r\d+$")
 	labeldef = re.compile(r"^\w+:$")
 	label = re.compile(r"^\[\w+\]$")
 
