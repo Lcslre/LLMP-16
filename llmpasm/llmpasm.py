@@ -21,6 +21,8 @@ class Lexer:
 	address = re.compile(r"^\[\d+\]$")
 	hexaddress = re.compile(r"^\[0x[\w\d]+\]$")
 
+	character = re.compile(r"^'\w'$")
+
 	register = re.compile(r"^r\d+$")
 	labeldef = re.compile(r"^\w+:$")
 	label = re.compile(r"^\[\w+\]$")
@@ -42,6 +44,8 @@ class Lexer:
 					token = IMM(idx+1, int(s))
 				elif re.match(self.hexnumber, s):
 					token = IMM(idx+1, int(s, 16))
+				elif re.match(self.character, s):
+					token = IMM(idx+1, ord(s[1]))
 				elif re.match(self.address, s):
 					token = ADDRESS(idx+1, int(s[1:-1]))
 				elif re.match(self.hexaddress, s):
