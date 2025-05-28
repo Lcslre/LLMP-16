@@ -203,10 +203,10 @@ if __name__ == "__main__":
 		prog="LLMP16asm",
 		description="Assembly compiler for the LLMP16 microprocessor")
 
-	parser.add_argument("filename")
-	parser.add_argument("-o", "--output", type=str, default=f"{os.getcwd()}/a.out")
-	parser.add_argument("-d", "--debug", action="store_true")
-	parser.add_argument("-v", "--verbose", action="store_true")
+	parser.add_argument("filename", help="Input filename")
+	parser.add_argument("-o", "--output", type=str, default=f"{os.getcwd()}/a.out", help="Output filename")
+	parser.add_argument("-d", "--debug", action="store_true", help="Print the error stacktrace")
+	parser.add_argument("-v", "--verbose", action="store_true", help="Print the parsed instructions")
 
 	args = parser.parse_args()
 
